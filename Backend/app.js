@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
 })
 
 app.get("/testListing",async(req,res)=>{
+    await Listing.deleteMany({});
      let samplelisting=new Listing({
          title:"My new Villa",
          description:"By the beach",
