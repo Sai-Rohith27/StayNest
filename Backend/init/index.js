@@ -22,14 +22,8 @@ async function main() {
 
 async function initDB() {
   await Listing.deleteMany({});
-
-  const listings = initData.data.map(({ image, ...listing }) => ({
-    ...listing,
-    image: image?.url || image,
-  }));
-
-  await Listing.insertMany(listings);
+  await Listing.insertMany(initData.data);
+  
   console.log("Database initialized with sample listings");
 }
-
 main();

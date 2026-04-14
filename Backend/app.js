@@ -26,19 +26,17 @@ app.get("/", (req, res) => {
     res.send("hi,Welcome to our website");
 })
 
-app.get("/testListing",async(req,res)=>{
-    await Listing.deleteMany({});
-     let samplelisting=new Listing({
-         title:"My new Villa",
-         description:"By the beach",
-         price:1220,
-         location:"Calangute , Goa",
-         country:"India",
-     });
-    await  samplelisting.save();
-    console.log("Sample was Saved");
-    res.send("Successfull testing");
+app.get("/listings",async(req,res)=>{
+    try{
+        const alllistigs= await  Listing.find({});
+    res.json(alllistigs);
+    }
+    catch(err){
+        console.log(err);
+    }
+    
 });
+
 
 app.listen(3030, () => {
     console.log("server is listening on port 3030....");

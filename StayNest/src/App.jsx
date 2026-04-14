@@ -1,9 +1,11 @@
+import Listings from "./pages/listings";
+
 function App() {
   return (
     <div>
-      <h1>Travel App</h1>
+      <Listings />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

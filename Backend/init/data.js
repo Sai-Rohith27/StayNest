@@ -4,7 +4,7 @@ const sampleListings = [
     description: "Escape to this charming beachfront cottage for a relaxing getaway. Enjoy stunning ocean views and easy access to the beach.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?beachfront,cottage",
+      url: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg",
     },
     price: 1500,
     location: "Malibu",
@@ -15,7 +15,7 @@ const sampleListings = [
     description: "Stay in the heart of the city in this stylish loft apartment. Perfect for urban explorers!",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?modern,loft,apartment",
+      url: "https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg",
     },
     price: 1200,
     location: "New York City",
@@ -26,7 +26,7 @@ const sampleListings = [
     description: "Unplug and unwind in this peaceful mountain cabin. Surrounded by nature, it's a perfect place to recharge.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?mountain,cabin,retreat",
+      url: "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg",
     },
     price: 1000,
     location: "Aspen",
@@ -34,10 +34,10 @@ const sampleListings = [
   },
   {
     title: "Historic Villa in Tuscany",
-    description: "Experience the charm of Tuscany in this beautifully restored villa. Explore the rolling hills and vineyards.",
+    description: "Experience the charm of Tuscany in this beautifully restored villa.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?tuscany,villa,italy",
+      url: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
     },
     price: 2500,
     location: "Florence",
@@ -45,10 +45,10 @@ const sampleListings = [
   },
   {
     title: "Secluded Treehouse Getaway",
-    description: "Live among the treetops in this unique treehouse retreat. A true nature lover's paradise.",
+    description: "Live among the treetops in this unique treehouse retreat.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?treehouse,forest",
+      url: "https://images.pexels.com/photos/247663/pexels-photo-247663.jpeg",
     },
     price: 800,
     location: "Portland",
@@ -56,10 +56,10 @@ const sampleListings = [
   },
   {
     title: "Beachfront Paradise",
-    description: "Step out of your door onto the sandy beach. This beachfront condo offers the ultimate relaxation.",
+    description: "Step out of your door onto the sandy beach.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?beach,paradise,ocean",
+      url: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
     },
     price: 2000,
     location: "Cancun",
@@ -67,10 +67,10 @@ const sampleListings = [
   },
   {
     title: "Rustic Cabin by the Lake",
-    description: "Spend your days fishing and kayaking on the serene lake. This cozy cabin is perfect for outdoor enthusiasts.",
+    description: "Spend your days fishing and kayaking on the serene lake.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?lake,cabin,rustic",
+      url: "https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg",
     },
     price: 900,
     location: "Lake Tahoe",
@@ -78,10 +78,10 @@ const sampleListings = [
   },
   {
     title: "Luxury Penthouse with City Views",
-    description: "Indulge in luxury living with panoramic city views from this stunning penthouse apartment.",
+    description: "Indulge in luxury living with panoramic city views.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?penthouse,cityview,luxury",
+      url: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
     },
     price: 3500,
     location: "Los Angeles",
@@ -89,10 +89,10 @@ const sampleListings = [
   },
   {
     title: "Ski-In/Ski-Out Chalet",
-    description: "Hit the slopes right from your doorstep in this ski-in/ski-out chalet in the Swiss Alps.",
+    description: "Hit the slopes right from your doorstep.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?ski,chalet,alps",
+      url: "https://images.pexels.com/photos/754268/pexels-photo-754268.jpeg",
     },
     price: 3000,
     location: "Verbier",
@@ -100,257 +100,179 @@ const sampleListings = [
   },
   {
     title: "Safari Lodge in the Serengeti",
-    description: "Experience the thrill of the wild in a comfortable safari lodge. Witness the Great Migration up close.",
+    description: "Experience the thrill of the wild.",
     image: {
       filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?safari,lodge,africa",
+      url: "https://images.pexels.com/photos/667205/pexels-photo-667205.jpeg",
     },
     price: 4000,
     location: "Serengeti National Park",
     country: "Tanzania",
   },
   {
-    title: "Historic Canal House",
-    description: "Stay in a piece of history in this beautifully preserved canal house in Amsterdam's iconic district.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?amsterdam,canal,house",
-    },
-    price: 1800,
-    location: "Amsterdam",
-    country: "Netherlands",
+  title: "Glass Igloo in Lapland",
+  description: "Sleep under the northern lights in this magical glass igloo experience.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/754263/pexels-photo-754263.jpeg",
   },
-  {
-    title: "Private Island Retreat",
-    description: "Have an entire island to yourself for a truly exclusive and unforgettable vacation experience.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?private,island,tropical",
-    },
-    price: 10000,
-    location: "Fiji",
-    country: "Fiji",
+  price: 4500,
+  location: "Lapland",
+  country: "Finland",
+},
+{
+  title: "Overwater Villa in Bora Bora",
+  description: "Luxury villa above crystal-clear turquoise water with private deck.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/1287460/pexels-photo-1287460.jpeg",
   },
-  {
-    title: "Charming Cottage in the Cotswolds",
-    description: "Escape to the picturesque Cotswolds in this quaint and charming cottage with a thatched roof.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?cotswolds,cottage,england",
-    },
-    price: 1200,
-    location: "Cotswolds",
-    country: "United Kingdom",
+  price: 8000,
+  location: "Bora Bora",
+  country: "French Polynesia",
+},
+{
+  title: "Desert Camp in Sahara",
+  description: "Experience golden dunes and starry nights in a luxury desert camp.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/248771/pexels-photo-248771.jpeg",
   },
-  {
-    title: "Historic Brownstone in Boston",
-    description: "Step back in time in this elegant historic brownstone located in the heart of Boston.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?boston,brownstone,historic",
-    },
-    price: 2200,
-    location: "Boston",
-    country: "United States",
+  price: 2000,
+  location: "Sahara",
+  country: "Morocco",
+},
+{
+  title: "Santorini Cave House",
+  description: "Stay in a stunning white cave house overlooking the Aegean Sea.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
   },
-  {
-    title: "Beachfront Bungalow in Bali",
-    description: "Relax on the sandy shores of Bali in this beautiful beachfront bungalow with a private pool.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?bali,bungalow,beach",
-    },
-    price: 1800,
-    location: "Bali",
-    country: "Indonesia",
+  price: 3500,
+  location: "Santorini",
+  country: "Greece",
+},
+{
+  title: "Tokyo Capsule Stay",
+  description: "Unique compact living experience in the heart of Tokyo.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/261395/pexels-photo-261395.jpeg",
   },
-  {
-    title: "Mountain View Cabin in Banff",
-    description: "Enjoy breathtaking mountain views from this cozy cabin in the Canadian Rockies.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?banff,mountain,cabin",
-    },
-    price: 1500,
-    location: "Banff",
-    country: "Canada",
+  price: 900,
+  location: "Tokyo",
+  country: "Japan",
+},
+{
+  title: "Swiss Alps Wooden Chalet",
+  description: "Cozy wooden chalet surrounded by snowy mountains.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/754268/pexels-photo-754268.jpeg",
   },
-  {
-    title: "Art Deco Apartment in Miami",
-    description: "Step into the glamour of the 1920s in this stylish Art Deco apartment in South Beach.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?miami,artdeco,southbeach",
-    },
-    price: 1600,
-    location: "Miami",
-    country: "United States",
+  price: 4200,
+  location: "Zermatt",
+  country: "Switzerland",
+},
+{
+  title: "Luxury Houseboat in Amsterdam",
+  description: "Stay on water in a stylish floating home with canal views.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg",
   },
-  {
-    title: "Tropical Villa in Phuket",
-    description: "Escape to a tropical paradise in this luxurious villa with a private infinity pool in Phuket.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?phuket,tropical,villa,pool",
-    },
-    price: 3000,
-    location: "Phuket",
-    country: "Thailand",
+  price: 2300,
+  location: "Amsterdam",
+  country: "Netherlands",
+},
+{
+  title: "Jungle Eco Lodge in Amazon",
+  description: "Reconnect with nature in a sustainable jungle lodge.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/247663/pexels-photo-247663.jpeg",
   },
-  {
-    title: "Historic Castle in Scotland",
-    description: "Live like royalty in this historic castle in the Scottish Highlands.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?scotland,castle,highlands",
-    },
-    price: 4000,
-    location: "Scottish Highlands",
-    country: "United Kingdom",
+  price: 1800,
+  location: "Amazon",
+  country: "Brazil",
+},
+{
+  title: "Cliff Hanging Hotel in Peru",
+  description: "Sleep inside a glass pod hanging off a mountain cliff.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg",
   },
-  {
-    title: "Desert Oasis in Dubai",
-    description: "Experience luxury in the middle of the desert in this opulent oasis in Dubai with a private pool.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?dubai,desert,luxury",
-    },
-    price: 5000,
-    location: "Dubai",
-    country: "United Arab Emirates",
+  price: 5000,
+  location: "Cusco",
+  country: "Peru",
+},
+{
+  title: "Beach Shack in Goa",
+  description: "Simple and chill beachside stay with sunset views.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
   },
-  {
-    title: "Rustic Log Cabin in Montana",
-    description: "Unplug and unwind in this cozy log cabin surrounded by the natural beauty of Montana.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?montana,logcabin,nature",
-    },
-    price: 1100,
-    location: "Montana",
-    country: "United States",
+  price: 1200,
+  location: "Goa",
+  country: "India",
+},
+{
+  title: "Himalayan Wooden Cabin",
+  description: "Peaceful cabin with breathtaking mountain views.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg",
   },
-  {
-    title: "Beachfront Villa in Greece",
-    description: "Enjoy the crystal-clear waters of the Mediterranean in this beautiful beachfront villa on a Greek island.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?greece,mykonos,villa,beach",
-    },
-    price: 2500,
-    location: "Mykonos",
-    country: "Greece",
+  price: 1500,
+  location: "Manali",
+  country: "India",
+},
+{
+  title: "Dubai Sky Luxury Apartment",
+  description: "High-rise luxury apartment with skyline views.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg",
   },
-  {
-    title: "Eco-Friendly Treehouse Retreat",
-    description: "Stay in an eco-friendly treehouse nestled in the forest. It's the perfect escape for nature lovers.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?treehouse,eco,forest",
-    },
-    price: 750,
-    location: "Costa Rica",
-    country: "Costa Rica",
+  price: 6000,
+  location: "Dubai",
+  country: "UAE",
+},
+{
+  title: "Paris Romantic Studio",
+  description: "Cute studio apartment near Eiffel Tower.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg",
   },
-  {
-    title: "Historic Cottage in Charleston",
-    description: "Experience the charm of historic Charleston in this beautifully restored cottage with a private garden.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?charleston,cottage,garden",
-    },
-    price: 1600,
-    location: "Charleston",
-    country: "United States",
+  price: 2200,
+  location: "Paris",
+  country: "France",
+},
+{
+  title: "Iceland Volcano View Cabin",
+  description: "Stay near lava fields with dramatic landscapes.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg",
   },
-  {
-    title: "Modern Apartment in Tokyo",
-    description: "Explore the vibrant city of Tokyo from this modern and centrally located apartment.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?tokyo,apartment,modern",
-    },
-    price: 2000,
-    location: "Tokyo",
-    country: "Japan",
+  price: 3800,
+  location: "Reykjavik",
+  country: "Iceland",
+},
+{
+  title: "New Zealand Lake House",
+  description: "Beautiful lakeside house with scenic mountain views.",
+  image: {
+    filename: "listingimage",
+    url: "https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg",
   },
-  {
-    title: "Lakefront Cabin in New Hampshire",
-    description: "Spend your days by the lake in this cozy cabin in the scenic White Mountains of New Hampshire.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?lake,cabin,newhampshire",
-    },
-    price: 1200,
-    location: "New Hampshire",
-    country: "United States",
-  },
-  {
-    title: "Luxury Villa in the Maldives",
-    description: "Indulge in luxury in this overwater villa in the Maldives with stunning views of the Indian Ocean.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?maldives,overwater,villa",
-    },
-    price: 6000,
-    location: "Maldives",
-    country: "Maldives",
-  },
-  {
-    title: "Ski Chalet in Aspen",
-    description: "Hit the slopes in style with this luxurious ski chalet in the world-famous Aspen ski resort.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?aspen,ski,chalet,snow",
-    },
-    price: 4000,
-    location: "Aspen",
-    country: "United States",
-  },
-  {
-    title: "Secluded Beach House in Costa Rica",
-    description: "Escape to a secluded beach house on the Pacific coast of Costa Rica. Surf, relax, and unwind.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?costarica,beach,house,surf",
-    },
-    price: 1800,
-    location: "Costa Rica",
-    country: "Costa Rica",
-  },
-  {
-    title: "Heritage Haveli in Jaipur",
-    description: "Experience royal Rajasthani charm in this restored haveli with colorful courtyards and traditional decor.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?jaipur,haveli,rajasthan",
-    },
-    price: 1400,
-    location: "Jaipur",
-    country: "India",
-  },
-  {
-    title: "Backwater Houseboat in Kerala",
-    description: "Cruise through peaceful backwaters in this cozy houseboat surrounded by palms and village life.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?kerala,houseboat,backwaters",
-    },
-    price: 1700,
-    location: "Alleppey",
-    country: "India",
-  },
-  {
-    title: "Cliffside Cottage in Santorini",
-    description: "Wake up to sparkling Aegean views from this whitewashed cottage tucked into the cliffs of Santorini.",
-    image: {
-      filename: "listingimage",
-      url: "https://source.unsplash.com/800x600/?santorini,cottage,cliffside",
-    },
-    price: 2800,
-    location: "Santorini",
-    country: "Greece",
-  },
+  price: 2700,
+  location: "Queenstown",
+  country: "New Zealand",
+}
 ];
-
 module.exports = { data: sampleListings };
