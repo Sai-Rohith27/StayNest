@@ -22,6 +22,8 @@ main();
 
 app.use(cors()); 
 
+app.use(express.json());
+
 app.get("/", (req, res) => {
     res.send("hi,Welcome to our website");
 })
@@ -34,7 +36,17 @@ app.get("/listings",async(req,res)=>{
     catch(err){
         console.log(err);
     }
-    
+});
+
+app.get("/listings/:id",async(req,res)=>{
+    try{
+        let {id}=req.params;
+       const listing= await Listing.findById(id);
+       res.json(listing);
+    }
+    catch(err){
+        console.log(err);
+    }
 });
 
 
