@@ -45,10 +45,39 @@ app.get("/listings/:id",async(req,res)=>{
        res.json(listing);
     }
     catch(err){
-        console.log(err);
+         res.status(500).json({ error: err.message });
     }
 });
 
+app.post("/listings", async (req, res) => {
+    try {
+        const newListing = new Listing(req.body);
+        await newListing.save();
+        res.json(newListing);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+app.put("/listings/:id", async (req, res) => {
+    try {
+        const updated = await Listing.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+app.delete("/listings/:id", async (req, res) => {
+    try {
+        await Listing.findByIdAndDelete(req.params.id);
+        res.json({ message: "Listing deleted!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 app.listen(3030, () => {
     console.log("server is listening on port 3030....");
