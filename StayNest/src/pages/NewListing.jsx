@@ -85,8 +85,8 @@ function NewListing() {
             background: "#ff385c", color: "white",
             border: "none", borderRadius: "8px",
             cursor: "pointer", fontWeight: "700",
-            fontSize: "16px"
-          }}
+            fontSize: "16px",
+            }}
         >
           Create Listing
         </button>
