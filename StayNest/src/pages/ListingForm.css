@@ -1,0 +1,325 @@
+.listing-form-page {
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 40px 0 64px;
+}
+
+.listing-form-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.listing-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.listing-form-back {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink-900);
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.listing-form-back:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+}
+
+.listing-form-badge,
+.listing-preview-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(122, 78, 53, 0.12);
+  color: var(--brand-700);
+  font-size: 0.84rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.listing-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.listing-form-panel,
+.listing-preview-card,
+.listing-form-state {
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.listing-form-panel {
+  padding: 30px;
+  background: var(--surface);
+}
+
+.listing-form-state {
+  padding: 24px;
+  background: var(--surface-strong);
+  text-align: center;
+  color: var(--ink-700);
+}
+
+.listing-form-kicker {
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-700);
+  font-weight: 700;
+}
+
+.listing-form-title {
+  margin-top: 12px;
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.7rem);
+  line-height: 1.03;
+  letter-spacing: -0.07em;
+  max-width: 11ch;
+}
+
+.listing-form-copy {
+  margin-top: 16px;
+  max-width: 62ch;
+  color: var(--ink-700);
+  line-height: 1.75;
+}
+
+.listing-form-alert {
+  margin-top: 22px;
+  padding: 15px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(184, 87, 46, 0.16);
+  background: rgba(255, 245, 235, 0.9);
+  color: var(--brand-700);
+  font-weight: 600;
+}
+
+.listing-form-alert.danger {
+  border-color: rgba(141, 51, 33, 0.16);
+  background: rgba(255, 240, 238, 0.92);
+  color: #8d3321;
+}
+
+.listing-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+  margin-top: 24px;
+}
+
+.listing-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listing-field-full {
+  grid-column: 1 / -1;
+}
+
+.listing-label {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.listing-label span {
+  color: #8d3321;
+}
+
+.listing-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(122, 78, 53, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink-900);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.listing-input:focus {
+  border-color: rgba(184, 87, 46, 0.28);
+  box-shadow: 0 0 0 4px rgba(184, 87, 46, 0.12);
+}
+
+.listing-input.has-error {
+  border-color: rgba(141, 51, 33, 0.42);
+  background: rgba(255, 245, 244, 0.94);
+  box-shadow: 0 0 0 4px rgba(141, 51, 33, 0.1);
+}
+
+.listing-textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.listing-error-text {
+  font-size: 0.84rem;
+  color: #8d3321;
+  font-weight: 600;
+}
+
+.listing-submit-button {
+  grid-column: 1 / -1;
+  appearance: none;
+  border: none;
+  border-radius: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-500) 100%);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 18px 34px rgba(184, 87, 46, 0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.listing-submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 38px rgba(184, 87, 46, 0.26);
+}
+
+.listing-preview-card {
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 241, 229, 0.92) 100%);
+}
+
+.listing-preview-media {
+  position: relative;
+  aspect-ratio: 16 / 11;
+}
+
+.listing-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #f7f1e9;
+}
+
+.listing-preview-pill {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+}
+
+.listing-preview-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listing-preview-location {
+  color: var(--ink-700);
+  font-size: 0.96rem;
+}
+
+.listing-preview-title {
+  font-size: 1.8rem;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  color: var(--ink-900);
+}
+
+.listing-preview-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ink-900);
+}
+
+.listing-preview-price span {
+  font-size: 0.96rem;
+  color: var(--ink-700);
+  font-weight: 600;
+}
+
+.listing-preview-description {
+  color: var(--ink-700);
+  line-height: 1.75;
+}
+
+.listing-preview-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.listing-preview-meta-item {
+  padding: 14px 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(122, 78, 53, 0.12);
+}
+
+.listing-preview-meta-item span {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+  margin-bottom: 8px;
+}
+
+.listing-preview-meta-item strong {
+  color: var(--ink-900);
+  font-size: 0.98rem;
+}
+
+@media (max-width: 1024px) {
+  .listing-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 780px) {
+  .listing-form-page {
+    width: min(100% - 24px, 1240px);
+    padding: 28px 0 40px;
+  }
+
+  .listing-form-panel,
+  .listing-preview-card,
+  .listing-form-state {
+    border-radius: 24px;
+  }
+
+  .listing-form-panel {
+    padding: 24px;
+  }
+
+  .listing-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .listing-form-page {
+    width: min(100% - 20px, 1240px);
+  }
+
+  .listing-preview-meta {
+    grid-template-columns: 1fr;
+  }
+}

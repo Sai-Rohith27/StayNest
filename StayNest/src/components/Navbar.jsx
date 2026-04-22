@@ -1,27 +1,31 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import "./Navbar.css";
 
 function Navbar() {
   return (
-    <nav style={{
-      display: "flex", justifyContent: "space-between",
-      alignItems: "center", padding: "16px 40px",
-      borderBottom: "1px solid #ebebeb", background: "#fff",
-      position: "sticky", top: 0, zIndex: 100
-    }}>
-      <Link to="/" style={{ textDecoration: "none" }}>
-        <h2 style={{ color: "#ff385c", margin: 0, fontSize: "24px" }}>🏠 StayNest</h2>
-      </Link>
-      <Link to="/listings/new">
-        <button style={{
-          background: "#ff385c", color: "white", border: "none",
-          padding: "10px 20px", borderRadius: "24px",
-          cursor: "pointer", fontWeight: "600", fontSize: "14px"
-        }}>
+    <header className="navbar-shell">
+      <nav className="navbar">
+        <div className="navbar-left">
+          <Link to="/" className="brand-link">
+            <span className="brand-mark">⌂</span>
+            <h2 className="brand-title">StayNest</h2>
+          </Link>
+
+          <div className="navbar-links">
+            <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? " is-active" : ""}`}>
+              Home
+            </NavLink>
+            <NavLink to="/listings" className={({ isActive }) => `nav-link${isActive ? " is-active" : ""}`}>
+              All Listings
+            </NavLink>
+          </div>
+        </div>
+
+        <Link to="/listings/new" className="navbar-action">
           + Add Listing
-        </button>
-      </Link>
-    </nav>
+        </Link>
+      </nav>
+    </header>
   );
 }
-
 export default Navbar;

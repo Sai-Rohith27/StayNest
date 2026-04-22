@@ -8,6 +8,7 @@ const cors = require('cors');  // ← ADD THIS
 const Listing=require("./models/listing");
 
 const mongo_url = process.env.MONGO_URL;
+const port = process.env.PORT || 3030;
 
 async function main() {
     try {
@@ -79,6 +80,7 @@ app.delete("/listings/:id", async (req, res) => {
     }
 });
 
-app.listen(3030, () => {
-    console.log("server is listening on port 3030....");
+app.listen(port, () => {
+    console.log(`Server is listening on http://localhost:${port}`);
 });
+
