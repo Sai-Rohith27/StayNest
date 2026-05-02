@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
-
 function EditListing() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -119,7 +118,6 @@ function EditListing() {
       </div>
     );
   }
-
   return (
     <div className="listing-form-page">
       <div className="listing-form-shell">
@@ -206,7 +204,6 @@ function EditListing() {
               </button>
             </form>
           </section>
-
           <aside className="listing-preview-card">
             <div className="listing-preview-media">
               <img
@@ -219,7 +216,6 @@ function EditListing() {
               />
               <span className="listing-preview-pill">Updated preview</span>
             </div>
-
             <div className="listing-preview-body">
               <p className="listing-preview-location">{previewLocation}</p>
               <h2 className="listing-preview-title">{previewTitle}</h2>
@@ -227,7 +223,6 @@ function EditListing() {
                 {previewPrice} <span>/ night</span>
               </p>
               <p className="listing-preview-description">{previewDescription}</p>
-
               <div className="listing-preview-meta">
                 <div className="listing-preview-meta-item">
                   <span>Editing mode</span>
@@ -245,5 +240,4 @@ function EditListing() {
     </div>
   );
 }
-
 export default EditListing;
