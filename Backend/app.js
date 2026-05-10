@@ -119,6 +119,32 @@ app.post("/listings/:id/reviews", validateReview, wrapAsync(async (req, res) => 
     res.status(201).json(review);
 }));
 
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+        throw new ExpressError(404, "Listing not found");
+    }
+
+    const isReviewLinked = listing.reviews.some(
+        (review) => review.toString() === reviewId
+    );
+
+    if (!isReviewLinked) {
+        throw new ExpressError(404, "Review not found for this listing");
+    }
+
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    const deletedReview = await Review.findByIdAndDelete(reviewId);
+
+    if (!deletedReview) {
+        throw new ExpressError(404, "Review not found");
+    }
+
+    res.json({ message: "Review deleted!" });
+}));
+
 // NEW: Catch-all for undefined routes (Fixed for Express 5 compatibility)
 app.use((req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));

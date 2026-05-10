@@ -53,12 +53,14 @@ function Show() {
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [submittedReviews, setSubmittedReviews] = useState([]);
+  const [hiddenReviewIds, setHiddenReviewIds] = useState([]);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: "",
     photos: "",
   });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState("");
   const [reviewTouched, setReviewTouched] = useState(reviewTouchedDefaults);
   const [reviewErrors, setReviewErrors] = useState({});
   const [reviewMessage, setReviewMessage] = useState("");
@@ -72,6 +74,7 @@ function Show() {
             ? res.data.reviews.map((review) => createStoredReview(review))
             : []
         );
+        setHiddenReviewIds([]);
         setError("");
         setLoading(false);
       })
@@ -126,6 +129,7 @@ function Show() {
       );
 
       const newReview = createSubmittedReview({
+        id: savedReview._id,
         rating: savedReview.rating,
         comment: savedReview.comment,
         photoUrls: savedReview.photoUrls || [],
@@ -143,6 +147,35 @@ function Show() {
       );
     } finally {
       setIsSubmittingReview(false);
+    }
+  };
+
+  const handleReviewDelete = async (review) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) {
+      return;
+    }
+
+    setDeletingReviewId(review.id);
+    setReviewMessage("");
+
+    try {
+      if (review.isStored) {
+        await axios.delete(`http://localhost:3030/listings/${id}/reviews/${review.id}`);
+        setSubmittedReviews((currentReviews) =>
+          currentReviews.filter((currentReview) => currentReview.id !== review.id)
+        );
+      } else {
+        setHiddenReviewIds((currentIds) => [...currentIds, review.id]);
+      }
+
+      setReviewMessage("Review deleted.");
+    } catch (err) {
+      console.log(err);
+      setReviewMessage(
+        err.response?.data?.error || "Unable to delete this review right now."
+      );
+    } finally {
+      setDeletingReviewId("");
     }
   };
 
@@ -204,7 +237,8 @@ function Show() {
   const hasCustomImage = imageUrl !== PLACEHOLDER_IMAGE;
   const reviewData = mergeReviewData(
     buildListingReviewData(listing, id),
-    submittedReviews
+    submittedReviews,
+    hiddenReviewIds
   );
 
   return (
@@ -456,6 +490,14 @@ function Show() {
                     <div className="show-review-rating-box">
                       <strong>{review.rating.toFixed(1)}</strong>
                       <StarRating rating={review.rating} />
+                      <button
+                        className="show-review-delete-button"
+                        type="button"
+                        onClick={() => handleReviewDelete(review)}
+                        disabled={deletingReviewId === review.id}
+                      >
+                        {deletingReviewId === review.id ? "Deleting..." : "Delete"}
+                      </button>
                     </div>
                   </div>
 
