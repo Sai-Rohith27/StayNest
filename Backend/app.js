@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const listings = require("./routes/Listings");
 const reviews = require("./routes/Review");
+const cookieParser = require('cookie-parser');
 // NEW: Importing your Error Handling & Validation Utilities from the utils folder
 const ExpressError = require("./utils/ExpressError");
 const mongo_url ="mongodb://127.0.0.1:27017/StayNest";
@@ -24,13 +25,13 @@ main();
 
 app.use(cors()); 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use("/listings/:id/reviews", reviews);
 app.use("/listings", listings);
 app.get("/", (req, res) => {
+    console.dir(req.cookies);
     res.send("hi,Welcome to our website");
 })
-
 // UPDATED: Replaced try/catch with wrapAsync
 // app.get("/listings", wrapAsync(async(req,res)=>{
 //     const alllistigs= await Listing.find({});
