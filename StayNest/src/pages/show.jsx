@@ -221,7 +221,7 @@ function Show() {
   if (loading) {
     return (
       <div className="show-page">
-        <div className="show-state-card">Loading listing...</div>
+        <div className="show-state-card">Loading listings in the menu...</div>
       </div>
     );
   }
