@@ -1,89 +1,73 @@
-// const env=require('dotenv').config();
 const express = require('express');
-const app = express();
-const path = require('path');
-const methodoverride = require('method-override');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const session = require('express-session'); // <-- 1. Imported
+const ExpressError = require("./utils/ExpressError");
 const listings = require("./routes/Listings");
 const reviews = require("./routes/Review");
-const cookieParser = require('cookie-parser');
-// NEW: Importing your Error Handling & Validation Utilities from the utils folder
-const ExpressError = require("./utils/ExpressError");
-const mongo_url ="mongodb://127.0.0.1:27017/StayNest";
+
+const app = express();
+const mongo_url = "mongodb://127.0.0.1:27017/StayNest";
 const port = 3030;
+
 async function main() {
     try {
         await mongoose.connect(mongo_url);
         console.log("Mongo Db connected");
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
     }
 }
 main();
 
+// --- 1. GENERAL MIDDLEWARE ---
 app.use(cors()); 
 app.use(express.json());
 app.use(cookieParser());
+
+// --- 2. SESSION CONFIGURATION ---
+// MUST be placed here, before your routes!
+const sessionOptions = {
+    secret: "staynedt_super_secret_code", 
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // Expires in 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true // Secures cookie from malicious JavaScript
+    }
+};
+app.use(session(sessionOptions));
+
+// --- 3. ROUTES ---
 app.use("/listings/:id/reviews", reviews);
 app.use("/listings", listings);
+
+// Test Route to verify your server's memory is working
+app.get("/count", (req, res) => {
+    if (req.session.count) {
+        req.session.count++;
+    } else {
+        req.session.count = 1;
+    }
+    res.send(`Your session count is ${req.session.count}`);
+});
+
+app.get("/test", (req, res) => {
+    res.send("DONE");
+});
+
 app.get("/", (req, res) => {
     console.dir(req.cookies);
-    res.send("hi,Welcome to our website");
-})
-// UPDATED: Replaced try/catch with wrapAsync
-// app.get("/listings", wrapAsync(async(req,res)=>{
-//     const alllistigs= await Listing.find({});
-//     res.json(alllistigs);
-// }));
+    res.send("Hi, Welcome to the Staynedt API");
+});
 
-// app.get("/listings/:id", wrapAsync(async(req,res)=>{
-//     let {id}=req.params;
-//     const listing= await Listing.findById(id);
-//     if (!listing) {
-//         throw new ExpressError(404, "Listing not found");
-//     }
-//     res.json(listing);
-// }));
-
-// // UPDATED: Added validateListing middleware and wrapAsync
-// app.post("/listings", validateListing, wrapAsync(async (req, res) => {
-//     const newListing = new Listing(req.body);
-//     await newListing.save();
-//     res.json(newListing);
-// }));
-
-// // UPDATED: Added validateListing middleware and wrapAsync
-// app.put("/listings/:id", validateListing, wrapAsync(async (req, res) => {
-//     const { id } = req.params;
-    
-//     // Spread the body to safely update the document, ensuring nested objects like 'image' are handled
-//     const updated = await Listing.findByIdAndUpdate(
-//         id,
-//         { ...req.body },
-//         { new: true, runValidators: true } // Also added runValidators to ensure schema rules are applied on update
-//     );
-    
-//     if (!updated) {
-//         throw new ExpressError(404, "Listing not found");
-//     }
-//     res.json(updated);
-// }));
-
-// app.delete("/listings/:id", wrapAsync(async (req, res) => {
-//     const deleted = await Listing.findByIdAndDelete(req.params.id);
-//     if (!deleted) {
-//         throw new ExpressError(404, "Listing not found");
-//     }
-//     res.json({ message: "Listing deleted!" });
-// }));
-// NEW: Catch-all for undefined routes (Fixed for Express 5 compatibility)
+// --- 4. ERROR HANDLING ---
 app.use((req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));
 });
 
-// NEW: Global Error Handler
 app.use((err, req, res, next) => {
     let { statusCode = 500, message = "Something went wrong!" } = err;
     res.status(statusCode).json({ error: message });

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // 1. Imported toast
 import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
@@ -77,9 +78,17 @@ function NewListing() {
     setShowFormAlert(false);
     try {
       await axios.post("http://localhost:3030/listings", formData);
+      
+      // 2. Trigger the Success Flash Message
+      toast.success("New Listing Created Successfully!");
+      
       navigate("/listings");
     } catch (err) {
       console.log(err);
+      
+      // 3. Trigger the Error Flash Message
+      toast.error("Failed to create listing. Please try again.");
+      
       setSubmitError("Unable to create the listing right now. Please try again.");
     }
   };
