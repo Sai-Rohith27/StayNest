@@ -6,20 +6,22 @@ import Listings from "./pages/Listings";
 import Show from "./pages/Show";
 import NewListing from "./pages/NewListing";
 import EditListing from "./pages/EditListing";
-
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer"; // Assuming you want to add this later
-
+import Footer from "./components/Footer"; 
 function App(){
   useEffect(() => {
-    toast("Welcome to StayNest. Find your next beautiful stay.", {
+    toast(
+      <span className="welcome-toast-content">
+        <span className="welcome-toast-check" aria-hidden="true">✓</span>
+        <span>Welcome to StayNest.</span>
+      </span>,
+      {
       containerId: "welcome",
       toastId: "staynest-welcome",
-    });
+      }
+    );
   }, []);
-
   return (
-    // Move BrowserRouter to the very top level of your component!
     <BrowserRouter> 
       <>
         <Navbar />
@@ -28,8 +30,8 @@ function App(){
           containerId="welcome"
           position="top-center"
           autoClose={3200}
-          hideProgressBar
-          closeButton={false}
+          hideProgressBar={false}
+          closeButton
           pauseOnHover={false}
           draggable={false}
           className="welcome-toast-container"
@@ -58,5 +60,4 @@ function App(){
     </BrowserRouter>
   );
 }
-
 export default App;
