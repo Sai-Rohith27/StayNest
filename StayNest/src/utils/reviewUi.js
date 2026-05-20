@@ -178,13 +178,14 @@ export function buildListingReviewData(listing, listingId) {
   };
 }
 
-export function createSubmittedReview({ id, rating, comment, photoUrls }) {
-  const author = "You";
+export function createSubmittedReview({ id, rating, comment, photoUrls, author, authorId }) {
+  const displayAuthor = author || "You";
 
   return {
     id: id || `submitted-review-${Date.now()}`,
-    author,
-    initials: getInitials(author),
+    author: displayAuthor,
+    authorId,
+    initials: getInitials(displayAuthor),
     timeAgo: "Just now",
     rating: Number(rating),
     comment: comment.trim(),
@@ -197,11 +198,15 @@ export function createSubmittedReview({ id, rating, comment, photoUrls }) {
 export function createStoredReview(review) {
   const photoUrls = Array.isArray(review?.photoUrls) ? review.photoUrls : [];
   const createdDate = review?.createdAt ? new Date(review.createdAt) : null;
+  const author = typeof review?.author === "object" ? review.author : null;
+  const authorName = author?.username || "Guest";
+  const authorId = author?._id || review?.author || "";
 
   return {
     id: review?._id || `stored-review-${Date.now()}`,
-    author: "Guest",
-    initials: getInitials("Guest"),
+    author: authorName,
+    authorId,
+    initials: getInitials(authorName),
     timeAgo: createdDate && !Number.isNaN(createdDate.getTime())
       ? createdDate.toLocaleDateString("en-IN", {
           day: "numeric",

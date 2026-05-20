@@ -22,6 +22,9 @@ async function main() {
 
 async function initDB() {
   await Listing.deleteMany({});
+ initData.data=initData.data.map((obj)>{
+    ...obj,owner:"64a1c8e5f0b9c2a1b2c3d4e" // Replace with an actual user ID from your database
+  });
   await Listing.insertMany(initData.data);
   
   console.log("Database initialized with sample listings");

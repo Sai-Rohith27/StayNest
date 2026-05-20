@@ -30,7 +30,7 @@ router.get("/me", (req, res) => {
         return res.status(401).json({error:"Not logged in"});
     }
 
-    res.json({user:req.user.username});
+    res.json({user:req.user.username, userId:req.user._id});
 });
 
 router.post("/login", (req, res, next) => {
@@ -50,7 +50,11 @@ router.post("/login", (req, res, next) => {
                 return next(loginErr);
             }
 
-            res.json({message:"Logged in successfully", user:req.user.username});
+            res.json({
+                message:"Logged in successfully",
+                user:req.user.username,
+                userId:req.user._id
+            });
         });
     })(req, res, next);
 });
@@ -60,7 +64,6 @@ router.post("/logout", (req, res, next) => {
         if (err) {
             return next(err);
         }
-
         res.json({message:"Logged out successfully"});
     });
 });

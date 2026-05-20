@@ -26,6 +26,21 @@ const isLoggedIn = (req, res, next) => {
     next();
 };
 
+const isReviewAuthor = wrapAsync(async (req, res, next) => {
+    const { reviewId } = req.params;
+    const review = await Review.findById(reviewId);
+
+    if (!review) {
+        throw new ExpressError(404, "Review not found");
+    }
+
+    if (!review.author || !review.author.equals(req.user._id)) {
+        throw new ExpressError(403, "You are not allowed to modify this review");
+    }
+
+    next();
+});
+
 const findListingWithReview = async (listingId, reviewId) => {
     const listing = await Listing.findOne({
         _id: listingId,
@@ -41,7 +56,13 @@ const findListingWithReview = async (listingId, reviewId) => {
 
 router.get("/", wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
+    const listing = await Listing.findById(id).populate({
+        path: "reviews",
+        populate: {
+            path: "author",
+            select: "username",
+        },
+    });
 
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
@@ -59,11 +80,13 @@ router.post("/", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
     }
 
     const review = new Review(req.body);
+    review.author = req.user._id;
     await review.save();
 
     listing.reviews.push(review._id);
     await listing.save();
 
+    await review.populate("author", "username");
     res.status(201).json(review);
 }));
 
@@ -72,7 +95,7 @@ router.get("/:reviewId", wrapAsync(async (req, res) => {
 
     await findListingWithReview(id, reviewId);
 
-    const review = await Review.findById(reviewId);
+    const review = await Review.findById(reviewId).populate("author", "username");
     if (!review) {
         throw new ExpressError(404, "Review not found");
     }
@@ -80,7 +103,7 @@ router.get("/:reviewId", wrapAsync(async (req, res) => {
     res.json(review);
 }));
 
-router.put("/:reviewId", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
+router.put("/:reviewId", isLoggedIn, isReviewAuthor, validateReview, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
 
     await findListingWithReview(id, reviewId);
@@ -98,7 +121,7 @@ router.put("/:reviewId", isLoggedIn, validateReview, wrapAsync(async (req, res) 
     res.json(review);
 }));
 
-router.delete("/:reviewId", isLoggedIn, wrapAsync(async (req, res) => {
+router.delete("/:reviewId", isLoggedIn, isReviewAuthor, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
 
     await findListingWithReview(id, reviewId);

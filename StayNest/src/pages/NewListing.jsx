@@ -73,6 +73,7 @@ function NewListing() {
 
     if (Object.keys(nextErrors).length > 0) {
       setShowFormAlert(true);
+      toast.error("Please fill all required listing details.");
       return;
     }
 
@@ -95,9 +96,10 @@ function NewListing() {
       }
       
       // 3. Trigger the Error Flash Message
-      toast.error("Failed to create listing. Please try again.");
+      const message = err.response?.data?.error || "Failed to create listing. Please try again.";
+      toast.error(message);
       
-      setSubmitError("Unable to create the listing right now. Please try again.");
+      setSubmitError(message);
     }
   };
 

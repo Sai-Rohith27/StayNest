@@ -16,10 +16,25 @@ const validateListing = (req, res, next) => {
 
 const isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated || !req.isAuthenticated()) {
-        throw new ExpressError(401, "You must login to create listing");
+        throw new ExpressError(401, "Please login first");
     }
     next();
 };
+
+const isOwner = wrapAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+        throw new ExpressError(404, "Listing not found");
+    }
+
+    if (!listing.owner || !listing.owner.equals(req.user._id)) {
+        throw new ExpressError(403, "You are not allowed to do that");
+    }
+
+    next();
+});
 
 // UPDATED: Replaced try/catch with wrapAsync
 router.get("/", wrapAsync(async(req,res)=>{
@@ -28,7 +43,15 @@ router.get("/", wrapAsync(async(req,res)=>{
 }));
 router.get("/:id", wrapAsync(async(req,res)=>{
     let {id}=req.params;
-    const listing= await Listing.findById(id).populate("reviews");
+    const listing= await Listing.findById(id)
+        .populate({
+            path: "reviews",
+            populate: {
+                path: "author",
+                select: "username",
+            },
+        })
+        .populate("owner");
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
     }
@@ -37,12 +60,13 @@ router.get("/:id", wrapAsync(async(req,res)=>{
 // UPDATED: Added validateListing middleware and wrapAsync
 router.post("/", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
     const newListing = new Listing(req.body);
+    newListing.owner = req.user._id;
     await newListing.save();
     res.json(newListing);
 }));
 
 // UPDATED: Added validateListing middleware and wrapAsync
-router.put("/:id", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn, isOwner, validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
     
     // Spread the body to safely update the document, ensuring nested objects like 'image' are handled
@@ -58,7 +82,7 @@ router.put("/:id", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
     res.json(updated);
 }));
 
-router.delete("/:id", isLoggedIn, wrapAsync(async (req, res) => {
+router.delete("/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
     const deleted = await Listing.findByIdAndDelete(req.params.id);
     if (!deleted) {
         throw new ExpressError(404, "Listing not found");

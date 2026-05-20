@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
@@ -88,6 +89,7 @@ function EditListing() {
 
     if (Object.keys(nextErrors).length > 0) {
       setShowFormAlert(true);
+      toast.error("Please fix the required fields before saving.");
       return;
     }
 
@@ -96,6 +98,7 @@ function EditListing() {
       await axios.put(`http://localhost:3030/listings/${id}`, formData, {
         withCredentials: true,
       });
+      toast.success("Listing updated successfully.");
       navigate(`/listings/${id}`);
     } catch (err) {
       console.log(err);
@@ -105,7 +108,16 @@ function EditListing() {
         return;
       }
 
-      setSubmitError("Unable to save changes right now. Please try again.");
+      if (err.response?.status === 403) {
+        const message = err.response?.data?.error || "You are not allowed to edit this listing.";
+        toast.error(message);
+        setSubmitError(message);
+        return;
+      }
+
+      const message = err.response?.data?.error || "Unable to save changes right now. Please try again.";
+      toast.error(message);
+      setSubmitError(message);
     }
   };
 

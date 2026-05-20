@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "./Show.css";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 import { buildListingReviewData, createStoredReview, createSubmittedReview, mergeReviewData } from "../utils/reviewUi";
@@ -50,6 +51,7 @@ function Show() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -85,6 +87,19 @@ function Show() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    axios.get("http://localhost:3030/me", { withCredentials: true })
+      .then((res) => {
+        setCurrentUser({
+          username: res.data.user,
+          id: res.data.userId,
+        });
+      })
+      .catch(() => {
+        setCurrentUser(null);
+      });
+  }, []);
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this listing?")) {
       return;
@@ -94,16 +109,28 @@ function Show() {
       await axios.delete(`http://localhost:3030/listings/${id}`, {
         withCredentials: true,
       });
+      toast.success("Listing deleted successfully.");
       navigate("/listings");
     } catch (err) {
       console.log(err);
       if (isLoginRequiredError(err)) {
         showLoginRequired(navigate, "Please login first to delete this listing.");
         setError("Please login first to delete this listing.");
+        setIsDeleting(false);
         return;
       }
 
-      setError("Unable to delete this listing right now.");
+      if (err.response?.status === 403) {
+        const message = err.response?.data?.error || "You are not allowed to delete this listing.";
+        toast.error(message);
+        setError(message);
+        setIsDeleting(false);
+        return;
+      }
+
+      const message = err.response?.data?.error || "Unable to delete this listing right now.";
+      toast.error(message);
+      setError(message);
       setIsDeleting(false);
     }
   };
@@ -120,6 +147,7 @@ function Show() {
     setReviewErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please fix the highlighted review fields.");
       setReviewMessage("Please fix the highlighted review fields.");
       return;
     }
@@ -143,12 +171,15 @@ function Show() {
         rating: savedReview.rating,
         comment: savedReview.comment,
         photoUrls: savedReview.photoUrls || [],
+        author: savedReview.author?.username || currentUser?.username || "You",
+        authorId: savedReview.author?._id || currentUser?.id || "",
       });
 
       setSubmittedReviews((currentReviews) => [newReview, ...currentReviews]);
       setReviewForm({ rating: 5, comment: "", photos: "" });
       setReviewTouched(reviewTouchedDefaults);
       setReviewErrors({});
+      toast.success("Review submitted successfully.");
       setReviewMessage("Your review has been saved.");
     } catch (err) {
       console.log(err);
@@ -158,9 +189,9 @@ function Show() {
         return;
       }
 
-      setReviewMessage(
-        err.response?.data?.error || "Unable to save your review right now."
-      );
+      const message = err.response?.data?.error || "Unable to save your review right now.";
+      toast.error(message);
+      setReviewMessage(message);
     } finally {
       setIsSubmittingReview(false);
     }
@@ -186,6 +217,7 @@ function Show() {
         setHiddenReviewIds((currentIds) => [...currentIds, review.id]);
       }
 
+      toast.success("Review deleted successfully.");
       setReviewMessage("Review deleted.");
     } catch (err) {
       console.log(err);
@@ -195,9 +227,9 @@ function Show() {
         return;
       }
 
-      setReviewMessage(
-        err.response?.data?.error || "Unable to delete this review right now."
-      );
+      const message = err.response?.data?.error || "Unable to delete this review right now.";
+      toast.error(message);
+      setReviewMessage(message);
     } finally {
       setDeletingReviewId("");
     }
@@ -259,6 +291,8 @@ function Show() {
   const imageUrl = getListingImage(listing);
   const locationLabel = getListingLocation(listing);
   const hasCustomImage = imageUrl !== PLACEHOLDER_IMAGE;
+  const ownerId = typeof listing.owner === "object" ? listing.owner?._id : listing.owner;
+  const isListingOwner = Boolean(currentUser?.id && ownerId && currentUser.id === ownerId);
   const reviewData = mergeReviewData(
     buildListingReviewData(listing, id),
     submittedReviews,
@@ -320,23 +354,25 @@ function Show() {
                 <strong>Ready to edit</strong>
               </div>
             </div>
-            <div className="show-action-row">
-              <button
-                onClick={() => navigate(`/listings/${id}/edit`)}
-                className="show-action-button secondary"
-                type="button"
-              >
-                Edit listing
-              </button>
-              <button
-                onClick={handleDelete}
-                className="show-action-button danger"
-                type="button"
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete listing"}
-              </button>
-            </div>
+            {isListingOwner && (
+              <div className="show-action-row">
+                <button
+                  onClick={() => navigate(`/listings/${id}/edit`)}
+                  className="show-action-button secondary"
+                  type="button"
+                >
+                  Edit listing
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="show-action-button danger"
+                  type="button"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete listing"}
+                </button>
+              </div>
+            )}
           </aside>
         </section>
 
@@ -514,14 +550,16 @@ function Show() {
                     <div className="show-review-rating-box">
                       <strong>{review.rating.toFixed(1)}</strong>
                       <StarRating rating={review.rating} />
-                      <button
-                        className="show-review-delete-button"
-                        type="button"
-                        onClick={() => handleReviewDelete(review)}
-                        disabled={deletingReviewId === review.id}
-                      >
-                        {deletingReviewId === review.id ? "Deleting..." : "Delete"}
-                      </button>
+                      {review.isStored && currentUser?.id === review.authorId && (
+                        <button
+                          className="show-review-delete-button"
+                          type="button"
+                          onClick={() => handleReviewDelete(review)}
+                          disabled={deletingReviewId === review.id}
+                        >
+                          {deletingReviewId === review.id ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
                     </div>
                   </div>
 
