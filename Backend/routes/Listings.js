@@ -87,7 +87,7 @@ router.delete("/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
     if (!deleted) {
         throw new ExpressError(404, "Listing not found");
     }
-    res.json({ message: "Listing deleted!" });
+    res.json({ message: "Listing deleted.....!" });
 }));
 
 module.exports=router;
