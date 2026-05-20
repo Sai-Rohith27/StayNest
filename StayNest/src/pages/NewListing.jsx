@@ -5,6 +5,7 @@ import { toast } from "react-toastify"; // 1. Imported toast
 import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
+import { CREATE_LISTING_LOGIN_MESSAGE, isLoginRequiredError, showLoginRequired } from "../utils/authUi";
 
 function NewListing() {
   const navigate = useNavigate();
@@ -77,7 +78,9 @@ function NewListing() {
 
     setShowFormAlert(false);
     try {
-      await axios.post("http://localhost:3030/listings", formData);
+      await axios.post("http://localhost:3030/listings", formData, {
+        withCredentials: true,
+      });
       
       // 2. Trigger the Success Flash Message
       toast.success("New Listing Created Successfully!");
@@ -85,6 +88,11 @@ function NewListing() {
       navigate("/listings");
     } catch (err) {
       console.log(err);
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate, CREATE_LISTING_LOGIN_MESSAGE);
+        setSubmitError(CREATE_LISTING_LOGIN_MESSAGE);
+        return;
+      }
       
       // 3. Trigger the Error Flash Message
       toast.error("Failed to create listing. Please try again.");

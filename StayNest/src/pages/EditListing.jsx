@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
+import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
 function EditListing() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -92,10 +93,18 @@ function EditListing() {
 
     setShowFormAlert(false);
     try {
-      await axios.put(`http://localhost:3030/listings/${id}`, formData);
+      await axios.put(`http://localhost:3030/listings/${id}`, formData, {
+        withCredentials: true,
+      });
       navigate(`/listings/${id}`);
     } catch (err) {
       console.log(err);
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate);
+        setSubmitError("Please login first to edit this listing.");
+        return;
+      }
+
       setSubmitError("Unable to save changes right now. Please try again.");
     }
   };

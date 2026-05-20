@@ -18,6 +18,14 @@ const validateReview = (req, res, next) => {
     next();
 };
 
+const isLoggedIn = (req, res, next) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+        throw new ExpressError(401, "You must login first");
+    }
+
+    next();
+};
+
 const findListingWithReview = async (listingId, reviewId) => {
     const listing = await Listing.findOne({
         _id: listingId,
@@ -42,7 +50,7 @@ router.get("/", wrapAsync(async (req, res) => {
     res.json(listing.reviews);
 }));
 
-router.post("/", validateReview, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id);
 
@@ -72,7 +80,7 @@ router.get("/:reviewId", wrapAsync(async (req, res) => {
     res.json(review);
 }));
 
-router.put("/:reviewId", validateReview, wrapAsync(async (req, res) => {
+router.put("/:reviewId", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
 
     await findListingWithReview(id, reviewId);
@@ -90,7 +98,7 @@ router.put("/:reviewId", validateReview, wrapAsync(async (req, res) => {
     res.json(review);
 }));
 
-router.delete("/:reviewId", wrapAsync(async (req, res) => {
+router.delete("/:reviewId", isLoggedIn, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params;
 
     await findListingWithReview(id, reviewId);

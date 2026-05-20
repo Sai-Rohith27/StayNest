@@ -8,6 +8,8 @@ import NewListing from "./pages/NewListing";
 import EditListing from "./pages/EditListing";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer"; 
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 function App(){
   useEffect(() => {
     toast(
@@ -20,7 +22,7 @@ function App(){
       toastId: "staynest-welcome",
       }
     );
-  }, []);
+  }, []); 
   return (
     <BrowserRouter> 
       <>
@@ -40,6 +42,8 @@ function App(){
         />
         <main className="app-shell">
           <Routes>
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/" element={<Listings />} />
             <Route path="/listings" element={<Listings />} />
             <Route path="/listings/new" element={<NewListing />} />
