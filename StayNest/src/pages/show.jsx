@@ -10,6 +10,7 @@ import {
   validateReviewField,
   validateReviewForm,
 } from "../utils/reviewFormValidation";
+import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
 
 function StarRating({ rating, className = "" }) {
   const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
@@ -90,10 +91,18 @@ function Show() {
     }
     try {
       setIsDeleting(true);
-      await axios.delete(`http://localhost:3030/listings/${id}`);
+      await axios.delete(`http://localhost:3030/listings/${id}`, {
+        withCredentials: true,
+      });
       navigate("/listings");
     } catch (err) {
       console.log(err);
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate, "Please login first to delete this listing.");
+        setError("Please login first to delete this listing.");
+        return;
+      }
+
       setError("Unable to delete this listing right now.");
       setIsDeleting(false);
     }
@@ -125,7 +134,8 @@ function Show() {
           rating: reviewForm.rating,
           comment: reviewForm.comment.trim(),
           photoUrls,
-        }
+        },
+        { withCredentials: true }
       );
 
       const newReview = createSubmittedReview({
@@ -142,6 +152,12 @@ function Show() {
       setReviewMessage("Your review has been saved.");
     } catch (err) {
       console.log(err);
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate, "Please login first to write a review.");
+        setReviewMessage("Please login first to write a review.");
+        return;
+      }
+
       setReviewMessage(
         err.response?.data?.error || "Unable to save your review right now."
       );
@@ -160,7 +176,9 @@ function Show() {
 
     try {
       if (review.isStored) {
-        await axios.delete(`http://localhost:3030/listings/${id}/reviews/${review.id}`);
+        await axios.delete(`http://localhost:3030/listings/${id}/reviews/${review.id}`, {
+          withCredentials: true,
+        });
         setSubmittedReviews((currentReviews) =>
           currentReviews.filter((currentReview) => currentReview.id !== review.id)
         );
@@ -171,6 +189,12 @@ function Show() {
       setReviewMessage("Review deleted.");
     } catch (err) {
       console.log(err);
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate, "Please login first to delete a review.");
+        setReviewMessage("Please login first to delete a review.");
+        return;
+      }
+
       setReviewMessage(
         err.response?.data?.error || "Unable to delete this review right now."
       );

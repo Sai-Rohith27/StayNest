@@ -14,6 +14,13 @@ const validateListing = (req, res, next) => {
     next();
 };
 
+const isLoggedIn = (req, res, next) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+        throw new ExpressError(401, "You must login to create listing");
+    }
+    next();
+};
+
 // UPDATED: Replaced try/catch with wrapAsync
 router.get("/", wrapAsync(async(req,res)=>{
     const alllistigs= await Listing.find({});
@@ -28,14 +35,14 @@ router.get("/:id", wrapAsync(async(req,res)=>{
     res.json(listing);
 }));
 // UPDATED: Added validateListing middleware and wrapAsync
-router.post("/", validateListing, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
     const newListing = new Listing(req.body);
     await newListing.save();
     res.json(newListing);
 }));
 
 // UPDATED: Added validateListing middleware and wrapAsync
-router.put("/:id", validateListing, wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
     
     // Spread the body to safely update the document, ensuring nested objects like 'image' are handled
@@ -51,7 +58,7 @@ router.put("/:id", validateListing, wrapAsync(async (req, res) => {
     res.json(updated);
 }));
 
-router.delete("/:id", wrapAsync(async (req, res) => {
+router.delete("/:id", isLoggedIn, wrapAsync(async (req, res) => {
     const deleted = await Listing.findByIdAndDelete(req.params.id);
     if (!deleted) {
         throw new ExpressError(404, "Listing not found");

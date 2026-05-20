@@ -25,7 +25,10 @@ async function main() {
 main();
 
 // --- 1. GENERAL MIDDLEWARE ---
-app.use(cors()); 
+app.use(cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    credentials: true
+})); 
 app.use(express.json());
 app.use(cookieParser());
 
@@ -48,15 +51,16 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.get("/demouser",async (req,res)=>{
-    let fakeuser=new User({
-        email:"someone@gmail.com",
-        username:"someone"
-    })
-     const registeredUser = await User.register(fakeuser, "mySuperSecretPassword");
-     res.send(registeredUser);
-})
+// app.get("/demouser",async (req,res)=>{
+//     let fakeuser=new User({
+//         email:"someone@gmail.com",
+//         username:"someone"
+//     })
+//      const registeredUser = await User.register(fakeuser, "mySuperSecretPassword");
+//      res.send(registeredUser);
+// })
 // --- 3. ROUTES ---
+app.use("/", userroutes);
 app.use("/listings/:id/reviews", reviewsroutes);
 app.use("/listings", listingsroutes);
 
