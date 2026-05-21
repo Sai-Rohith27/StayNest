@@ -6,6 +6,7 @@ import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 import { CREATE_LISTING_LOGIN_MESSAGE, isLoginRequiredError, showLoginRequired } from "../utils/authUi";
+import { readImageFile } from "../utils/imageUpload";
 
 function NewListing() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ function NewListing() {
   const [touched, setTouched] = useState(touchedDefaults);
   const [showFormAlert, setShowFormAlert] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,6 +59,35 @@ function NewListing() {
     }));
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const uploadedImage = await readImageFile(file);
+      const nextFormData = {
+        ...formData,
+        image: {
+          url: uploadedImage.url,
+          filename: uploadedImage.name || "listingimage",
+        },
+      };
+
+      setFormData(nextFormData);
+      setTouched((prevTouched) => ({ ...prevTouched, image: true }));
+      setErrors((prevErrors) => ({ ...prevErrors, image: "" }));
+      setSubmitError("");
+    } catch (err) {
+      const message = err.message || "Unable to upload this image.";
+      toast.error(message);
+      setErrors((prevErrors) => ({ ...prevErrors, image: message }));
+      setTouched((prevTouched) => ({ ...prevTouched, image: true }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = validateForm(formData);
@@ -78,6 +109,7 @@ function NewListing() {
     }
 
     setShowFormAlert(false);
+    setIsSubmitting(true);
     try {
       await axios.post("http://localhost:3030/listings", formData, {
         withCredentials: true,
@@ -100,6 +132,8 @@ function NewListing() {
       toast.error(message);
       
       setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -148,7 +182,6 @@ function NewListing() {
                 { label: "Price per night (₹)", name: "price", type: "number" },
                 { label: "Location", name: "location", type: "text" },
                 { label: "Country", name: "country", type: "text" },
-                { label: "Image URL", name: "image", type: "text" },
               ].map(({ label, name, type }) => (
                 <label className="listing-field" key={name}>
                   <span className="listing-label">
@@ -174,6 +207,34 @@ function NewListing() {
 
               <label className="listing-field listing-field-full">
                 <span className="listing-label">
+                  Listing image <span>*</span>
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="listing-input listing-file-input"
+                />
+                <input
+                  name="image"
+                  type="text"
+                  value={formData.image.url}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`listing-input${errors.image && touched.image ? " has-error" : ""}`}
+                  aria-invalid={Boolean(errors.image)}
+                  aria-describedby="image-error"
+                  placeholder="Or paste an image URL"
+                />
+                {errors.image && touched.image && (
+                  <span id="image-error" className="listing-error-text">
+                    {errors.image}
+                  </span>
+                )}
+              </label>
+
+              <label className="listing-field listing-field-full">
+                <span className="listing-label">
                   Description <span>*</span>
                 </span>
                 <textarea
@@ -193,8 +254,8 @@ function NewListing() {
                 )}
               </label>
 
-              <button type="submit" className="listing-submit-button">
-                Create listing
+              <button type="submit" className="listing-submit-button" disabled={isSubmitting}>
+                {isSubmitting ? "Creating listing..." : "Create listing"}
               </button>
             </form>
           </section>

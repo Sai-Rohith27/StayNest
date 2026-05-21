@@ -48,6 +48,8 @@ const listingSchema = new mongoose.Schema({
         });
     }
  });
-const Listing = mongoose.model("Listing", listingSchema);
-
+// This checks if the model already exists before trying to compile it again
+const Listing = mongoose.models.Listing || mongoose.model("Listing", listingSchema);
 module.exports = Listing;
+
+

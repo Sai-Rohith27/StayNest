@@ -7,10 +7,14 @@ export const reviewTouchedDefaults = {
 const reviewFieldLabels = {
   rating: "Rating",
   comment: "Comment",
-  photos: "Photo links",
+  photos: "Photos",
 };
 
 function getPhotoUrls(value) {
+  if (Array.isArray(value)) {
+    return value.map((url) => String(url).trim()).filter(Boolean);
+  }
+
   return String(value)
     .split(/\n|,/)
     .map((url) => url.trim())
@@ -62,10 +66,14 @@ export function validateReviewField(name, value) {
     }
 
     for (const photoUrl of photoUrls) {
+      if (photoUrl.startsWith("data:image/")) {
+        continue;
+      }
+
       try {
         new URL(photoUrl);
       } catch {
-        return "Please enter valid photo URLs separated by commas.";
+        return "Please upload photos or enter valid photo URLs separated by commas.";
       }
     }
   }

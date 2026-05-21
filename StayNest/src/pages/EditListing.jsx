@@ -6,6 +6,7 @@ import "./ListingForm.css";
 import { touchedDefaults, getFieldValue, validateField, validateForm } from "../utils/listingFormValidation";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
+import { readImageFile } from "../utils/imageUpload";
 function EditListing() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ function EditListing() {
   const [touched, setTouched] = useState(touchedDefaults);
   const [showFormAlert, setShowFormAlert] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:3030/listings/${id}`)
@@ -73,6 +75,35 @@ function EditListing() {
     }));
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const uploadedImage = await readImageFile(file);
+      const nextFormData = {
+        ...formData,
+        image: {
+          url: uploadedImage.url,
+          filename: uploadedImage.name || "listingimage",
+        },
+      };
+
+      setFormData(nextFormData);
+      setTouched((prevTouched) => ({ ...prevTouched, image: true }));
+      setErrors((prevErrors) => ({ ...prevErrors, image: "" }));
+      setSubmitError("");
+    } catch (err) {
+      const message = err.message || "Unable to upload this image.";
+      toast.error(message);
+      setErrors((prevErrors) => ({ ...prevErrors, image: message }));
+      setTouched((prevTouched) => ({ ...prevTouched, image: true }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = validateForm(formData);
@@ -94,6 +125,7 @@ function EditListing() {
     }
 
     setShowFormAlert(false);
+    setIsSubmitting(true);
     try {
       await axios.put(`http://localhost:3030/listings/${id}`, formData, {
         withCredentials: true,
@@ -118,6 +150,8 @@ function EditListing() {
       const message = err.response?.data?.error || "Unable to save changes right now. Please try again.";
       toast.error(message);
       setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -175,7 +209,6 @@ function EditListing() {
                 { label: "Price per night (₹)", name: "price", type: "number" },
                 { label: "Location", name: "location", type: "text" },
                 { label: "Country", name: "country", type: "text" },
-                { label: "Image URL", name: "image", type: "text" },
               ].map(({ label, name, type }) => (
                 <label className="listing-field" key={name}>
                   <span className="listing-label">
@@ -201,6 +234,34 @@ function EditListing() {
 
               <label className="listing-field listing-field-full">
                 <span className="listing-label">
+                  Listing image <span>*</span>
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="listing-input listing-file-input"
+                />
+                <input
+                  name="image"
+                  type="text"
+                  value={formData.image?.url || ""}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`listing-input${errors.image && touched.image ? " has-error" : ""}`}
+                  aria-invalid={Boolean(errors.image)}
+                  aria-describedby="image-error"
+                  placeholder="Or paste an image URL"
+                />
+                {errors.image && touched.image && (
+                  <span id="image-error" className="listing-error-text">
+                    {errors.image}
+                  </span>
+                )}
+              </label>
+
+              <label className="listing-field listing-field-full">
+                <span className="listing-label">
                   Description <span>*</span>
                 </span>
                 <textarea
@@ -220,8 +281,8 @@ function EditListing() {
                 )}
               </label>
 
-              <button type="submit" className="listing-submit-button">
-                Save changes
+              <button type="submit" className="listing-submit-button" disabled={isSubmitting}>
+                {isSubmitting ? "Saving changes..." : "Save changes"}
               </button>
             </form>
           </section>

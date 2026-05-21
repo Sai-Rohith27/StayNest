@@ -168,6 +168,10 @@
   box-shadow: 0 0 0 4px rgba(141, 51, 33, 0.1);
 }
 
+.listing-file-input {
+  cursor: pointer;
+}
+
 .listing-textarea {
   min-height: 160px;
   resize: vertical;
@@ -197,6 +201,12 @@
 .listing-submit-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 22px 38px rgba(184, 87, 46, 0.26);
+}
+
+.listing-submit-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 .listing-preview-card {

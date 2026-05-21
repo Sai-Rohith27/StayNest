@@ -12,7 +12,7 @@ const fieldLabels = {
   price: "Price per night",
   location: "Location",
   country: "Country",
-  image: "Image URL",
+  image: "Listing image",
   description: "Description",
 };
 
@@ -36,10 +36,14 @@ export function validateField(name, value) {
   }
 
   if (name === "image") {
+    if (trimmedValue.startsWith("data:image/")) {
+      return "";
+    }
+
     try {
       new URL(trimmedValue);
     } catch {
-      return "Please enter a valid image URL.";
+      return "Please upload an image or enter a valid image URL.";
     }
   }
 

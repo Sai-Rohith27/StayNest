@@ -12,6 +12,7 @@ import {
   validateReviewForm,
 } from "../utils/reviewFormValidation";
 import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
+import { readImageFiles } from "../utils/imageUpload";
 
 function StarRating({ rating, className = "" }) {
   const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
@@ -62,11 +63,18 @@ function Show() {
     comment: "",
     photos: "",
   });
+  const [uploadedReviewPhotos, setUploadedReviewPhotos] = useState([]);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [deletingReviewId, setDeletingReviewId] = useState("");
   const [reviewTouched, setReviewTouched] = useState(reviewTouchedDefaults);
   const [reviewErrors, setReviewErrors] = useState({});
   const [reviewMessage, setReviewMessage] = useState("");
+
+  const getReviewPhotoLinkValues = (value) =>
+    String(value)
+      .split(/\n|,/)
+      .map((url) => url.trim())
+      .filter(Boolean);
 
   useEffect(() => {
     axios.get(`http://localhost:3030/listings/${id}`)
@@ -137,7 +145,19 @@ function Show() {
 
   const handleReviewSubmit = async (event) => {
     event.preventDefault();
-    const nextErrors = validateReviewForm(reviewForm);
+    const uploadedPhotoUrls = uploadedReviewPhotos.map((photo) => photo.url);
+    const linkedPhotoUrls = getReviewPhotoLinkValues(reviewForm.photos);
+    const photoUrls = [
+      ...uploadedPhotoUrls,
+      ...linkedPhotoUrls,
+    ].slice(0, 4);
+    const nextErrors = validateReviewForm({
+      ...reviewForm,
+      photos: [
+        ...uploadedPhotoUrls,
+        ...linkedPhotoUrls,
+      ],
+    });
 
     setReviewTouched({
       rating: true,
@@ -152,7 +172,6 @@ function Show() {
       return;
     }
 
-    const photoUrls = getReviewPhotoUrls(reviewForm.photos);
     setIsSubmittingReview(true);
 
     try {
@@ -177,6 +196,7 @@ function Show() {
 
       setSubmittedReviews((currentReviews) => [newReview, ...currentReviews]);
       setReviewForm({ rating: 5, comment: "", photos: "" });
+      setUploadedReviewPhotos([]);
       setReviewTouched(reviewTouchedDefaults);
       setReviewErrors({});
       toast.success("Review submitted successfully.");
@@ -242,7 +262,10 @@ function Show() {
     }));
     setReviewErrors((currentErrors) => {
       const nextErrors = { ...currentErrors };
-      const errorMessage = validateReviewField(name, value);
+      const fieldValue = name === "photos"
+        ? [...uploadedReviewPhotos.map((photo) => photo.url), ...getReviewPhotoLinkValues(value)]
+        : value;
+      const errorMessage = validateReviewField(name, fieldValue);
 
       if (errorMessage) {
         nextErrors[name] = errorMessage;
@@ -255,6 +278,49 @@ function Show() {
     setReviewMessage("");
   };
 
+  const handleReviewPhotoUpload = async (event) => {
+    const files = event.target.files;
+
+    if (!files?.length) {
+      return;
+    }
+
+    try {
+      const uploadedPhotos = await readImageFiles(files, 4);
+      const photoLinks = getReviewPhotoLinkValues(reviewForm.photos);
+      const availableSlots = Math.max(0, 4 - photoLinks.length);
+      const nextPhotos = uploadedPhotos.slice(0, availableSlots);
+
+      if (availableSlots === 0) {
+        toast.error("Please keep reviews to 4 photos total.");
+      } else if (uploadedPhotos.length > availableSlots) {
+        toast.info(`Added ${availableSlots} photo${availableSlots === 1 ? "" : "s"} so the review stays within the 4 photo limit.`);
+      }
+
+      setUploadedReviewPhotos(nextPhotos);
+      setReviewTouched((currentTouched) => ({ ...currentTouched, photos: true }));
+      setReviewErrors((currentErrors) => {
+        const nextErrors = { ...currentErrors };
+        const combinedPhotos = [...nextPhotos.map((photo) => photo.url), ...photoLinks];
+        const errorMessage = validateReviewField("photos", combinedPhotos);
+
+        if (errorMessage) {
+          nextErrors.photos = errorMessage;
+        } else {
+          delete nextErrors.photos;
+        }
+
+        return nextErrors;
+      });
+      setReviewMessage("");
+    } catch (err) {
+      const message = err.message || "Unable to upload these photos.";
+      toast.error(message);
+      setReviewErrors((currentErrors) => ({ ...currentErrors, photos: message }));
+      setReviewTouched((currentTouched) => ({ ...currentTouched, photos: true }));
+    }
+  };
+
   const markReviewFieldTouched = (name) => {
     setReviewTouched((currentTouched) => ({
       ...currentTouched,
@@ -262,7 +328,10 @@ function Show() {
     }));
     setReviewErrors((currentErrors) => {
       const nextErrors = { ...currentErrors };
-      const errorMessage = validateReviewField(name, reviewForm[name]);
+      const fieldValue = name === "photos"
+        ? [...uploadedReviewPhotos.map((photo) => photo.url), ...getReviewPhotoLinkValues(reviewForm[name])]
+        : reviewForm[name];
+      const errorMessage = validateReviewField(name, fieldValue);
 
       if (errorMessage) {
         nextErrors[name] = errorMessage;
@@ -501,6 +570,34 @@ function Show() {
                   <p className="show-review-field-error">{reviewErrors.comment}</p>
                 )}
               </label>
+
+              <label className="show-review-field">
+                <span>Upload photos</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleReviewPhotoUpload}
+                  aria-invalid={Boolean(reviewTouched.photos && reviewErrors.photos)}
+                />
+              </label>
+
+              {uploadedReviewPhotos.length > 0 && (
+                <div className="show-review-upload-preview">
+                  {uploadedReviewPhotos.map((photo, photoIndex) => (
+                    <figure className="show-review-thumb small" key={`${photo.name}-${photoIndex}`}>
+                      <img
+                        src={photo.url}
+                        alt={`Uploaded review photo ${photoIndex + 1}`}
+                        onError={(event) => {
+                          event.target.src = PLACEHOLDER_IMAGE;
+                        }}
+                      />
+                      <figcaption>{photo.name || `Photo ${photoIndex + 1}`}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              )}
 
               <label className="show-review-field">
                 <span>Photo links</span>
