@@ -25,6 +25,7 @@ function EditListing() {
   const [showFormAlert, setShowFormAlert] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listingImageFile, setListingImageFile] = useState(null);
 
   useEffect(() => {
     axios.get(`http://localhost:3030/listings/${id}`)
@@ -47,6 +48,9 @@ function EditListing() {
       : { ...formData, [name]: value };
 
     setFormData(nextFormData);
+    if (name === "image") {
+      setListingImageFile(null);
+    }
     setSubmitError("");
 
     if (showFormAlert) {
@@ -93,6 +97,7 @@ function EditListing() {
       };
 
       setFormData(nextFormData);
+      setListingImageFile(uploadedImage.file);
       setTouched((prevTouched) => ({ ...prevTouched, image: true }));
       setErrors((prevErrors) => ({ ...prevErrors, image: "" }));
       setSubmitError("");
@@ -127,7 +132,21 @@ function EditListing() {
     setShowFormAlert(false);
     setIsSubmitting(true);
     try {
-      await axios.put(`http://localhost:3030/listings/${id}`, formData, {
+      const listingPayload = new FormData();
+      listingPayload.append("title", formData.title || "");
+      listingPayload.append("description", formData.description || "");
+      listingPayload.append("price", formData.price || "");
+      listingPayload.append("location", formData.location || "");
+      listingPayload.append("country", formData.country || "");
+
+      if (listingImageFile) {
+        listingPayload.append("image", listingImageFile);
+      } else {
+        listingPayload.append("imageUrl", formData.image?.url || "");
+        listingPayload.append("imageFilename", formData.image?.filename || "listingimage");
+      }
+
+      await axios.put(`http://localhost:3030/listings/${id}`, listingPayload, {
         withCredentials: true,
       });
       toast.success("Listing updated successfully.");

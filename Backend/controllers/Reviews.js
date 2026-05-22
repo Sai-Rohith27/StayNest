@@ -23,7 +23,6 @@ module.exports.updatereview = async (req, res) => {
     const { id, reviewId } = req.params;
 
     await findListingWithReview(id, reviewId);
-
     const review = await Review.findByIdAndUpdate(
         reviewId,
         req.body,
@@ -127,7 +126,18 @@ module.exports.logined = (req, res, next) => {
 };
 
 module.exports.reviewvalidation = (req, res, next) => {
-    const { error, value } = reviewSchema.validate(req.body);
+    const existingPhotoUrls = Array.isArray(req.body.photoUrls)
+        ? req.body.photoUrls
+        : req.body.photoUrls
+            ? [req.body.photoUrls]
+            : [];
+    const uploadedPhotoUrls = Array.isArray(req.files)
+        ? req.files.map((file) => file.path)
+        : [];
+    const { error, value } = reviewSchema.validate({
+        ...req.body,
+        photoUrls: [...uploadedPhotoUrls, ...existingPhotoUrls].slice(0, 4),
+    });
 
     if (error) {
         let errMsg = error.details.map((el) => el.message).join(",");

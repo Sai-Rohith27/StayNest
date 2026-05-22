@@ -17,17 +17,11 @@ export function readImageFile(file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve({
-        name: file.name,
-        url: reader.result,
-      });
-    };
-    reader.onerror = () => {
-      reject(new Error("Unable to read this image. Please try another file."));
-    };
-    reader.readAsDataURL(file);
+    resolve({
+      file,
+      name: file.name,
+      url: URL.createObjectURL(file),
+    });
   });
 }
 

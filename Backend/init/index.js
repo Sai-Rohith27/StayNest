@@ -5,7 +5,8 @@ const initData = require("./data");
 
 dotenv.config();
 
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/StayNest";
+const cleanEnv = (value) => String(value || "").trim().replace(/;+$/, "");
+const MONGO_URL = cleanEnv(process.env.MONGO_URL) || "mongodb://127.0.0.1:27017/StayNest";
 
 async function main() {
   try {
@@ -22,9 +23,6 @@ async function main() {
 
 async function initDB() {
   await Listing.deleteMany({});
- initData.data=initData.data.map((obj)>{
-    ...obj,owner:"64a1c8e5f0b9c2a1b2c3d4e" // Replace with an actual user ID from your database
-  });
   await Listing.insertMany(initData.data);
   
   console.log("Database initialized with sample listings");

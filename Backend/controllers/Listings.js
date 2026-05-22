@@ -8,7 +8,24 @@ module.exports.index = async (req, res) => {
 };
 
 module.exports.newlisting = async (req, res) => {
-    const newListing = new Listing(req.body);
+    const listingData = { ...req.body };
+
+    if (req.file) {
+        listingData.image = {
+            url: req.file.path,
+            filename: req.file.filename,
+        };
+    } else if (req.body.imageUrl) {
+        listingData.image = {
+            url: req.body.imageUrl,
+            filename: req.body.imageFilename || "listingimage",
+        };
+    }
+
+    delete listingData.imageUrl;
+    delete listingData.imageFilename;
+
+    const newListing = new Listing(listingData);
     newListing.owner = req.user._id;
     await newListing.save();
     res.json(newListing);
@@ -33,9 +50,26 @@ module.exports.getlisting = async (req, res) => {
 
 module.exports.updatelisting = async (req, res) => {
     const { id } = req.params;
+    const listingData = { ...req.body };
+
+    if (req.file) {
+        listingData.image = {
+            url: req.file.path,
+            filename: req.file.filename,
+        };
+    } else if (req.body.imageUrl) {
+        listingData.image = {
+            url: req.body.imageUrl,
+            filename: req.body.imageFilename || "listingimage",
+        };
+    }
+
+    delete listingData.imageUrl;
+    delete listingData.imageFilename;
+
     const updated = await Listing.findByIdAndUpdate(
         id,
-        { ...req.body },
+        listingData,
         { new: true, runValidators: true }
     );
     
@@ -70,7 +104,20 @@ module.exports.owner = async (req, res, next) => {
 
 // RENAMED: Changed from Listingvalidation to validateListing to match your router
 module.exports.validateListing = (req, res, next) => {
-    const { error } = listingSchema.validate(req.body);
+    const { imageUrl, imageFilename, ...body } = req.body;
+    const listingData = {
+        ...body,
+        image: req.file
+            ? {
+                url: req.file.path,
+                filename: req.file.filename,
+            }
+            : {
+                url: imageUrl,
+                filename: imageFilename || "listingimage",
+            },
+    };
+    const { error } = listingSchema.validate(listingData);
     if (error) {
         let errMsg = error.details.map((el) => el.message).join(",");
         throw new ExpressError(400, errMsg);

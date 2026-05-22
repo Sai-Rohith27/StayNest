@@ -23,6 +23,7 @@ function NewListing() {
   const [showFormAlert, setShowFormAlert] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listingImageFile, setListingImageFile] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +32,9 @@ function NewListing() {
       : { ...formData, [name]: value };
 
     setFormData(nextFormData);
+    if (name === "image") {
+      setListingImageFile(null);
+    }
     setSubmitError("");
 
     if (showFormAlert) {
@@ -77,6 +81,7 @@ function NewListing() {
       };
 
       setFormData(nextFormData);
+      setListingImageFile(uploadedImage.file);
       setTouched((prevTouched) => ({ ...prevTouched, image: true }));
       setErrors((prevErrors) => ({ ...prevErrors, image: "" }));
       setSubmitError("");
@@ -111,7 +116,21 @@ function NewListing() {
     setShowFormAlert(false);
     setIsSubmitting(true);
     try {
-      await axios.post("http://localhost:3030/listings", formData, {
+      const listingPayload = new FormData();
+      listingPayload.append("title", formData.title);
+      listingPayload.append("description", formData.description);
+      listingPayload.append("price", formData.price);
+      listingPayload.append("location", formData.location);
+      listingPayload.append("country", formData.country);
+
+      if (listingImageFile) {
+        listingPayload.append("image", listingImageFile);
+      } else {
+        listingPayload.append("imageUrl", formData.image.url);
+        listingPayload.append("imageFilename", formData.image.filename || "listingimage");
+      }
+
+      await axios.post("http://localhost:3030/listings", listingPayload, {
         withCredentials: true,
       });
       

@@ -147,10 +147,6 @@ function Show() {
     event.preventDefault();
     const uploadedPhotoUrls = uploadedReviewPhotos.map((photo) => photo.url);
     const linkedPhotoUrls = getReviewPhotoLinkValues(reviewForm.photos);
-    const photoUrls = [
-      ...uploadedPhotoUrls,
-      ...linkedPhotoUrls,
-    ].slice(0, 4);
     const nextErrors = validateReviewForm({
       ...reviewForm,
       photos: [
@@ -175,13 +171,19 @@ function Show() {
     setIsSubmittingReview(true);
 
     try {
+      const reviewPayload = new FormData();
+      reviewPayload.append("rating", reviewForm.rating);
+      reviewPayload.append("comment", reviewForm.comment.trim());
+      uploadedReviewPhotos.forEach((photo) => {
+        reviewPayload.append("photos", photo.file);
+      });
+      linkedPhotoUrls.slice(0, Math.max(0, 4 - uploadedReviewPhotos.length)).forEach((photoUrl) => {
+        reviewPayload.append("photoUrls", photoUrl);
+      });
+
       const { data: savedReview } = await axios.post(
         `http://localhost:3030/listings/${id}/reviews`,
-        {
-          rating: reviewForm.rating,
-          comment: reviewForm.comment.trim(),
-          photoUrls,
-        },
+        reviewPayload,
         { withCredentials: true }
       );
 

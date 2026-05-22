@@ -1,4 +1,5 @@
 const express = require('express');
+require("dotenv").config();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -11,8 +12,9 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/User");
 const app = express();
-const mongo_url = "mongodb://127.0.0.1:27017/StayNest";
-const port = 3030;
+const cleanEnv = (value) => String(value || "").trim().replace(/;+$/, "");
+const mongo_url = cleanEnv(process.env.MONGO_URL) || "mongodb://127.0.0.1:27017/StayNest";
+const port = Number(cleanEnv(process.env.PORT)) || 3030;
 
 async function main() {
     try {
@@ -50,15 +52,6 @@ app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-
-// app.get("/demouser",async (req,res)=>{
-//     let fakeuser=new User({
-//         email:"someone@gmail.com",
-//         username:"someone"
-//     })
-//      const registeredUser = await User.register(fakeuser, "mySuperSecretPassword");
-//      res.send(registeredUser);
-// })
 // --- 3. ROUTES ---
 app.use("/", userroutes);
 app.use("/listings/:id/reviews", reviewsroutes);
@@ -90,6 +83,18 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
     let { statusCode = 500, message = "Something went wrong!" } = err;
+
+    if (
+        err?.name === "MulterError" ||
+        /invalid signature/i.test(message) ||
+        /cloudinary/i.test(message)
+    ) {
+        statusCode = 400;
+        message = /invalid signature/i.test(message)
+            ? "Image upload failed. Please check your Cloudinary API secret in Backend/.env."
+            : "Image upload failed. Please choose a valid image and try again.";
+    }
+
     res.status(statusCode).json({ error: message });
 });
 
