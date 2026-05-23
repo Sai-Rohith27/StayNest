@@ -8,6 +8,7 @@ module.exports.index = async (req, res) => {
 };
 
 module.exports.newlisting = async (req, res) => {
+      
     const listingData = { ...req.body };
 
     if (req.file) {
