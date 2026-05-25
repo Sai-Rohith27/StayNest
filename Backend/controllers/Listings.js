@@ -2,8 +2,157 @@ const Listing = require("../models/Listing");
 const ExpressError = require("../utils/ExpressError"); // Added missing import
 const { listingSchema } = require("../schema.js");    // Added missing import
 
+const monthLookup = {
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11,
+};
+
+function parseListingDateRange(dates, year) {
+    const match = String(dates || "").match(/(\d{1,2})\s*-\s*(\d{1,2})\s*([A-Za-z]{3,})/);
+    if (!match) {
+        return null;
+    }
+
+    const month = monthLookup[match[3].slice(0, 3).toLowerCase()];
+    if (month === undefined) {
+        return null;
+    }
+
+    return {
+        start: new Date(year, month, Number(match[1])),
+        end: new Date(year, month, Number(match[2])),
+    };
+}
+
+function listingMatchesDateRange(listing, startDate, endDate) {
+    if (!startDate || !endDate) {
+        return true;
+    }
+
+    if (listing.availabilityStart && listing.availabilityEnd) {
+        return listing.availabilityStart <= startDate && listing.availabilityEnd >= endDate;
+    }
+
+    const parsedDates = parseListingDateRange(listing.dates, startDate.getFullYear());
+    if (!parsedDates) {
+        return true;
+    }
+
+    return parsedDates.start <= startDate && parsedDates.end >= endDate;
+}
+
 module.exports.index = async (req, res) => {
-    const alllistigs = await Listing.find({});
+    const {
+        destination,
+        checkIn,
+        checkOut,
+        adults = 0,
+        children = 0,
+        infants = 0,
+        childAges = "",
+    } = req.query;
+
+    const filters = {};
+    const trimmedDestination = String(destination || "").trim();
+    const requestedGuests = Number(adults || 0) + Number(children || 0);
+    const requestedInfants = Number(infants || 0);
+    const parsedChildAges = String(childAges || "")
+        .split(",")
+        .map((age) => Number(age))
+        .filter((age) => Number.isFinite(age));
+    const youngestChildAge = parsedChildAges.length ? Math.min(...parsedChildAges) : null;
+    const startDate = checkIn ? new Date(checkIn) : null;
+    const endDate = checkOut ? new Date(checkOut) : null;
+
+    if (trimmedDestination) {
+        const destinationRegex = new RegExp(trimmedDestination.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+        filters.$or = [
+            { title: destinationRegex },
+            { location: destinationRegex },
+            { country: destinationRegex },
+        ];
+    }
+
+    if (requestedGuests > 0) {
+        filters.$and = [
+            ...(filters.$and || []),
+            {
+                $or: [
+                    { maxGuests: { $exists: false } },
+                    { maxGuests: { $gte: requestedGuests } },
+                ],
+            },
+        ];
+    }
+
+    if (requestedInfants > 0) {
+        filters.$and = [
+            ...(filters.$and || []),
+            {
+                $or: [
+                    { allowInfants: { $exists: false } },
+                    { allowInfants: true },
+                ],
+            },
+        ];
+    }
+
+    if (Number(children) > 0) {
+        filters.$and = [
+            ...(filters.$and || []),
+            {
+                $or: [
+                    { allowChildren: { $exists: false } },
+                    { allowChildren: true },
+                ],
+            },
+        ];
+    }
+
+    if (youngestChildAge !== null) {
+        filters.$and = [
+            ...(filters.$and || []),
+            {
+                $or: [
+                    { minGuestAge: { $exists: false } },
+                    { minGuestAge: { $lte: youngestChildAge } },
+                ],
+            },
+        ];
+    }
+
+    if (startDate instanceof Date && !Number.isNaN(startDate.getTime()) && endDate instanceof Date && !Number.isNaN(endDate.getTime())) {
+        filters.$and = [
+            ...(filters.$and || []),
+            {
+                $or: [
+                    { availabilityStart: { $exists: false } },
+                    { availabilityEnd: { $exists: false } },
+                    {
+                        availabilityStart: { $lte: startDate },
+                        availabilityEnd: { $gte: endDate },
+                    },
+                ],
+            },
+        ];
+    }
+
+    let alllistigs = await Listing.find(filters);
+
+    if (startDate instanceof Date && !Number.isNaN(startDate.getTime()) && endDate instanceof Date && !Number.isNaN(endDate.getTime())) {
+        alllistigs = alllistigs.filter((listing) => listingMatchesDateRange(listing, startDate, endDate));
+    }
+
     res.json(alllistigs);
 };
 
@@ -77,6 +226,28 @@ module.exports.updatelisting = async (req, res) => {
     if (!updated) {
         throw new ExpressError(404, "Listing not found");
     }
+    res.json(updated);
+};
+
+module.exports.updateCoordinates = async (req, res) => {
+    const { id } = req.params;
+    const lat = Number(req.body?.lat);
+    const lng = Number(req.body?.lng);
+
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+        throw new ExpressError(400, "Valid latitude and longitude are required");
+    }
+
+    const updated = await Listing.findByIdAndUpdate(
+        id,
+        { coordinates: { lat, lng } },
+        { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+        throw new ExpressError(404, "Listing not found");
+    }
+
     res.json(updated);
 };
 

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Listings from "./pages/Listings";
@@ -10,6 +12,41 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+
+function RequireAuth({ children }) {
+  const location = useLocation();
+  const [authState, setAuthState] = useState("checking");
+
+  useEffect(() => {
+    let isActive = true;
+
+    axios.get("http://localhost:3030/me", { withCredentials: true })
+      .then(() => {
+        if (isActive) setAuthState("allowed");
+      })
+      .catch(() => {
+        if (isActive) {
+          toast.error("Please login first.");
+          setAuthState("blocked");
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  if (authState === "checking") {
+    return <div className="listings-loading">Checking login...</div>;
+  }
+
+  if (authState === "blocked") {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  return children;
+}
+
 function App(){
   useEffect(() => {
     toast(
@@ -46,9 +83,9 @@ function App(){
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<Listings />} />
             <Route path="/listings" element={<Listings />} />
-            <Route path="/listings/new" element={<NewListing />} />
+            <Route path="/listings/new" element={<RequireAuth><NewListing /></RequireAuth>} />
             <Route path="/listings/:id" element={<Show />} />
-            <Route path="/listings/:id/edit" element={<EditListing />} />
+            <Route path="/listings/:id/edit" element={<RequireAuth><EditListing /></RequireAuth>} />
             <Route
               path="*"
               element={(

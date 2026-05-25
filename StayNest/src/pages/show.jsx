@@ -3,16 +3,16 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Show.css";
-import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
+import { formatPrice, getListingGallery, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 import { buildListingReviewData, createStoredReview, createSubmittedReview, mergeReviewData } from "../utils/reviewUi";
 import {
-  getReviewPhotoUrls,
   reviewTouchedDefaults,
   validateReviewField,
   validateReviewForm,
 } from "../utils/reviewFormValidation";
 import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
 import { readImageFiles } from "../utils/imageUpload";
+import Map from "../components/map";
 
 function StarRating({ rating, className = "" }) {
   const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
@@ -70,12 +70,17 @@ function Show() {
   const [reviewErrors, setReviewErrors] = useState({});
   const [reviewMessage, setReviewMessage] = useState("");
 
+  // --- MAP STATES ---
+  const [coordinates, setCoordinates] = useState(null);
+  const [mapLoading, setMapLoading] = useState(true);
+
   const getReviewPhotoLinkValues = (value) =>
     String(value)
       .split(/\n|,/)
       .map((url) => url.trim())
       .filter(Boolean);
 
+  // FETCH LISTING
   useEffect(() => {
     axios.get(`http://localhost:3030/listings/${id}`)
       .then((res) => {
@@ -96,6 +101,7 @@ function Show() {
       });
   }, [id]);
 
+  // FETCH CURRENT USER
   useEffect(() => {
     axios.get("http://localhost:3030/me", { withCredentials: true })
       .then((res) => {
@@ -108,6 +114,59 @@ function Show() {
         setCurrentUser(null);
       });
   }, []);
+
+  // --- GEOCODING ALGORITHM FOR MAP ---
+  useEffect(() => {
+    const storedLat = Number(listing?.coordinates?.lat);
+    const storedLng = Number(listing?.coordinates?.lng);
+
+    if (Number.isFinite(storedLat) && Number.isFinite(storedLng)) {
+      setCoordinates([storedLat, storedLng]);
+      setMapLoading(false);
+      return;
+    }
+
+    if (listing?._id && listing?.location) {
+      const geocodeAndStoreCoordinates = async () => {
+        setMapLoading(true);
+        const searchQuery = `${listing.location}, ${listing.country || ""}`;
+
+        try {
+          const res = await axios.get("https://nominatim.openstreetmap.org/search", {
+            params: {
+              format: "json",
+              limit: 1,
+              q: searchQuery,
+            },
+          });
+
+          if (res.data && res.data.length > 0) {
+            const nextCoordinates = [
+              parseFloat(res.data[0].lat),
+              parseFloat(res.data[0].lon),
+            ];
+            setCoordinates(nextCoordinates);
+
+            const savedListing = await axios.patch(
+              `http://localhost:3030/listings/${listing._id}/coordinates`,
+              { lat: nextCoordinates[0], lng: nextCoordinates[1] }
+            );
+            setListing(savedListing.data);
+          } else {
+            setCoordinates([20.5937, 78.9629]); // Fallback map location
+          }
+        } catch (err) {
+          console.error("Geocoding error:", err);
+          setCoordinates([20.5937, 78.9629]);
+        } finally {
+          setMapLoading(false);
+        }
+      };
+
+      geocodeAndStoreCoordinates();
+    }
+  }, [listing?._id, listing?.location, listing?.country, listing?.coordinates?.lat, listing?.coordinates?.lng]);
+
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this listing?")) {
       return;
@@ -359,7 +418,9 @@ function Show() {
       </div>
     );
   }
+  
   const imageUrl = getListingImage(listing);
+  const galleryImages = getListingGallery(listing);
   const locationLabel = getListingLocation(listing);
   const hasCustomImage = imageUrl !== PLACEHOLDER_IMAGE;
   const ownerId = typeof listing.owner === "object" ? listing.owner?._id : listing.owner;
@@ -382,19 +443,30 @@ function Show() {
         </button>
         {error && <div className="show-alert">{error}</div>}
         <section className="show-hero">
-          <div className="show-media-card">
-            <img
-              src={imageUrl}
-              alt={listing.title}
-              className="show-image"
-              onError={(event) => {
-                event.target.src = PLACEHOLDER_IMAGE;
-              }}
-            />
+          <div className="show-media-card show-gallery-card">
+            <div className="show-gallery-grid">
+              {galleryImages.map((photoUrl, photoIndex) => (
+                <figure
+                  className={`show-gallery-item show-gallery-item-${photoIndex + 1}`}
+                  key={`${photoUrl}-${photoIndex}`}
+                >
+                  <img
+                    src={photoUrl}
+                    alt={`${listing.title} photo ${photoIndex + 1}`}
+                    onError={(event) => {
+                      event.target.src = PLACEHOLDER_IMAGE;
+                    }}
+                  />
+                </figure>
+              ))}
+            </div>
             <div className="show-image-overlay">
               <span className="show-badge">StayNest pick</span>
               <p className="show-overlay-location">{locationLabel}</p>
             </div>
+            <button className="show-gallery-button" type="button">
+              Show all photos
+            </button>
           </div>
           <aside className="show-summary-card">
             <p className="show-summary-kicker">Listing overview</p>
@@ -474,6 +546,24 @@ function Show() {
             </div>
           </aside>
         </section>
+
+        {/* --- THE NEW MAP SECTION --- */}
+        <section className="show-panel" style={{ marginTop: "24px", marginBottom: "24px", padding: "34px" }}>
+          <p className="show-panel-label">Neighborhood</p>
+          <h2 className="show-panel-title">Where you'll be</h2>
+          <p className="show-location" style={{ marginBottom: "24px", marginTop: "8px", fontSize: "1.05rem" }}>
+            {locationLabel}
+          </p>
+          
+          {mapLoading ? (
+            <div style={{ height: "450px", background: "rgba(255, 241, 229, 0.4)", borderRadius: "24px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-600)" }}>
+              Loading neighborhood map...
+            </div>
+          ) : (
+            <Map coordinates={coordinates} locationName={locationLabel} />
+          )}
+        </section>
+        {/* -------------------------------- */}
 
         <section className="show-review-grid">
           <article className="show-panel show-review-panel">
@@ -669,7 +759,7 @@ function Show() {
                       {review.photoLabels.map((label, photoIndex) => (
                         <figure className="show-review-thumb" key={label}>
                           <img
-                            src={review.photoUrls?.[photoIndex] || imageUrl}
+                            src={review.photoUrls?.[photoIndex] || galleryImages[photoIndex % galleryImages.length] || imageUrl}
                             alt={`${listing.title} ${label}`}
                             onError={(event) => {
                               event.target.src = PLACEHOLDER_IMAGE;
@@ -747,7 +837,7 @@ function Show() {
                 {reviewData.spotlight.photoLabels.slice(0, 4).map((label, photoIndex) => (
                   <figure className="show-review-thumb small" key={label}>
                     <img
-                      src={reviewData.spotlight.photoUrls?.[photoIndex] || imageUrl}
+                      src={reviewData.spotlight.photoUrls?.[photoIndex] || galleryImages[photoIndex % galleryImages.length] || imageUrl}
                       alt={`${listing.title} ${label}`}
                       onError={(event) => {
                         event.target.src = PLACEHOLDER_IMAGE;

@@ -55,18 +55,33 @@ function Navbar() {
       <nav className="navbar">
         <div className="navbar-left">
           <Link to="/" className="brand-link">
-            <span className="brand-mark">⌂</span>
-            <h2 className="brand-title">StayNest</h2>
+            <span className="brand-mark" aria-hidden="true">
+              <span />
+            </span>
+            <span className="brand-copy">
+              <strong>StayNest</strong>
+              <small>homes with a story</small>
+            </span>
           </Link>
+        </div>
 
+        <div className="navbar-center">
           <div className="navbar-links">
             <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? " is-active" : ""}`}>
-              Home
+              Explore
             </NavLink>
             <NavLink to="/listings" className={({ isActive }) => `nav-link${isActive ? " is-active" : ""}`}>
-              All Listings
+              Stays
             </NavLink>
           </div>
+
+          <button className="navbar-search" type="button" onClick={() => navigate("/listings")}>
+            <span className="navbar-search-copy">
+              <strong>Search stays</strong>
+              <small>Find homes by place</small>
+            </span>
+            <span className="navbar-search-icon" aria-hidden="true" />
+          </button>
         </div>
 
         <div className="navbar-actions">
@@ -89,7 +104,7 @@ function Navbar() {
           )}
 
           <Link to="/listings/new" className="navbar-action" onClick={handleAddListing}>
-            + Add Listing
+            Host a stay
           </Link>
         </div>
       </nav>

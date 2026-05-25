@@ -25,6 +25,10 @@ router.route("/")
 // Keep this path as an alias in case older frontend code still posts here.
 router.route("/new")
     .post(isLoggedIn, upload.single("image"), validateListing, wrapAsync(listingsController.newlisting));
+
+router.route("/:id/coordinates")
+    .patch(wrapAsync(listingsController.updateCoordinates));
+
 // UPDATED: Added validateListing middleware and wrapAsync
 router.route("/:id")
     .get(wrapAsync(listingsController.getlisting))
@@ -32,3 +36,4 @@ router.route("/:id")
     .delete(isLoggedIn, isOwner, wrapAsync(listingsController.deletelisting));
 
 module.exports=router;
+

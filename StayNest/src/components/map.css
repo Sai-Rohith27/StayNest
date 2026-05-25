@@ -1,0 +1,133 @@
+.staynest-map-shell {
+  width: 100%;
+  min-height: 320px;
+  border: 1px solid #dddddd;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f7f7f7;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.staynest-price-marker {
+  background: transparent;
+  border: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.staynest-price-marker span {
+  position: relative;
+  min-width: 54px;
+  height: 42px;
+  padding: 0 10px;
+  border: 2px solid #ffffff;
+  border-radius: 22px 22px 22px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff385c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 9px 20px rgba(0, 0, 0, 0.24);
+  transform: rotate(-45deg);
+  transform-origin: 50% 82%;
+  transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.staynest-price-marker span::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.staynest-price-marker span::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0.92;
+}
+
+.staynest-price-marker span b {
+  position: relative;
+  z-index: 1;
+  transform: rotate(45deg);
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+}
+
+.staynest-price-marker:hover span,
+.staynest-price-marker.is-active span {
+  transform: rotate(-45deg) scale(1.08);
+  background: #222222;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+}
+
+.staynest-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.staynest-map-popup .leaflet-popup-content {
+  width: 230px;
+  margin: 0;
+}
+
+.map-popup-card {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.map-popup-card img {
+  width: 78px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.map-popup-card div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.map-popup-card strong,
+.map-popup-card span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-popup-card strong {
+  color: #222222;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.map-popup-card span {
+  color: #717171;
+  font-size: 12px;
+}
+
+.map-popup-card b {
+  margin-top: 4px;
+  color: #222222;
+  font-size: 13px;
+}

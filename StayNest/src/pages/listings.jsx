@@ -1,160 +1,430 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./Listings.css";
-import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
+import Map from "../components/map";
+import { formatPrice, getListingImage, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 
-const getDescriptionPreview = (description) => {
-  const trimmedDescription = String(description ?? "").trim();
-
-  if (!trimmedDescription) {
-    return "A warm, comfortable stay with better spacing, cleaner visuals, and room to settle in.";
-  }
-
-  return trimmedDescription.length > 105
-    ? `${trimmedDescription.slice(0, 102)}...`
-    : trimmedDescription;
+const countryToPlace = {
+  "Uttar Pradesh": "Varanasi",
+  Telangana: "Hyderabad",
+  Maharashtra: "Mumbai",
 };
 
-function Listings() {
+const emptySearchForm = {
+  destination: "",
+  checkIn: "",
+  checkOut: "",
+  adults: 1,
+  children: 0,
+  infants: 0,
+  childAges: [],
+};
+
+function getPlaceName(listing) {
+  return countryToPlace[listing.country] || listing.country || "India";
+}
+
+function getNightCount(listing) {
+  const match = String(listing.dates || "").match(/(\d+)-(\d+)/);
+  if (!match) return 1;
+  return Math.max(1, Number(match[2]) - Number(match[1]));
+}
+
+function getTotalPrice(listing) {
+  return Number(listing.price || 0) * getNightCount(listing);
+}
+
+function ListingCard({ listing, variant = "row", isActive = false, onClick, onHover, onImageError }) {
+  const imageUrl = getListingImage(listing);
+  const rating = Number(listing.rating || 0);
+  const nights = getNightCount(listing);
+
+  return (
+    <article
+      className={`stay-tile stay-tile-${variant}${isActive ? " is-active" : ""}`}
+      onClick={onClick}
+      onMouseEnter={onHover}
+    >
+      <div className="stay-tile-media">
+        <img
+          src={imageUrl}
+          alt={listing.title}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+            onImageError?.(listing._id);
+          }}
+        />
+        {listing.guestFavorite && <span className="stay-tile-badge">Guest favourite</span>}
+        <button
+          className="stay-tile-heart"
+          type="button"
+          aria-label={`Save ${listing.title}`}
+          onClick={(event) => event.stopPropagation()}
+        />
+      </div>
+
+      <div className="stay-tile-body">
+        <div className="stay-tile-mainline">
+          <h3>{listing.title}</h3>
+          {rating > 0 && <span>{rating.toFixed(2)}</span>}
+        </div>
+
+        <p className="stay-tile-muted">{listing.location}</p>
+        <p className="stay-tile-muted">{listing.distance}</p>
+
+        <p className="stay-tile-price">
+          <strong>{formatPrice(getTotalPrice(listing))}</strong>
+          <span> for {nights} nights</span>
+        </p>
+
+        {variant === "map" && listing.freeCancellation && (
+          <span className="stay-tile-cancel">Free cancellation</span>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function PlaceRow({ place, listings, onOpenPlace, onOpenListing, onImageError }) {
+  const trackRef = useRef(null);
+
+  const scrollRow = (direction) => {
+    trackRef.current?.scrollBy({
+      left: direction * 720,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className="place-row">
+      <div className="place-row-head">
+        <button className="place-title-button" type="button" onClick={() => onOpenPlace(place)}>
+          Popular homes in {place}
+          <span aria-hidden="true">›</span>
+        </button>
+
+        <div className="place-row-controls">
+          <button className="place-scroll-button prev" type="button" onClick={() => scrollRow(-1)} aria-label={`Scroll ${place} left`} />
+          <button className="place-scroll-button next" type="button" onClick={() => scrollRow(1)} aria-label={`Scroll ${place} right`} />
+        </div>
+      </div>
+
+      <div className="place-row-track" ref={trackRef}>
+        {listings.slice(0, 12).map((listing) => (
+          <ListingCard
+            key={listing._id}
+            listing={listing}
+            onClick={() => onOpenListing(listing._id)}
+            onImageError={onImageError}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function Listings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeListingId, setActiveListingId] = useState("");
+  const [brokenImageIds, setBrokenImageIds] = useState([]);
+  const [searchForm, setSearchForm] = useState(emptySearchForm);
+  const [searchError, setSearchError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const selectedPlace = useMemo(() => {
+    return searchParams.get("place") || "";
+  }, [searchParams]);
+  const hasSearch = useMemo(() => {
+    return ["destination", "checkIn", "checkOut", "adults", "children", "infants"].some((key) => searchParams.has(key));
+  }, [searchParams]);
+  const resultLabel = useMemo(() => {
+    const destination = searchParams.get("destination") || selectedPlace;
+    return destination ? `stays for ${destination}` : "matching stays";
+  }, [searchParams, selectedPlace]);
 
   useEffect(() => {
-    axios.get("http://localhost:3030/listings")
+    const searchParams = new URLSearchParams(location.search);
+    const children = Number(searchParams.get("children") || 0);
+    const childAges = (searchParams.get("childAges") || "")
+      .split(",")
+      .filter(Boolean)
+      .slice(0, children);
+
+    setSearchForm({
+      destination: searchParams.get("destination") || searchParams.get("place") || "",
+      checkIn: searchParams.get("checkIn") || "",
+      checkOut: searchParams.get("checkOut") || "",
+      adults: Number(searchParams.get("adults") || 1),
+      children,
+      infants: Number(searchParams.get("infants") || 0),
+      childAges,
+    });
+  }, [location.search]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios.get(`http://localhost:3030/listings${location.search}`)
       .then((res) => {
-        if (Array.isArray(res.data)) {
-          setListings(res.data);
-          setError("");
-        } else {
-          setListings([]);
-          setError("Unexpected response from the server.");
-        }
-        setLoading(false);
+        setListings(Array.isArray(res.data) ? res.data : []);
+        setError("");
       })
       .catch((err) => {
         console.log(err);
-        setListings([]);
-        setError("Unable to load listings. Make sure the backend is running on http://localhost:3030.");
-        setLoading(false);
-      });
-  }, []);
+        setError("Unable to load listings right now.");
+      })
+      .finally(() => setLoading(false));
+  }, [location.search]);
 
-  const listingCountLabel = listings.length === 1 ? "1 stay ready to explore" : `${listings.length} stays ready to explore`;
+  const visibleListings = useMemo(() => {
+    return listings.filter((listing) => {
+      const imageUrl = getListingImage(listing);
+      return imageUrl !== PLACEHOLDER_IMAGE && !brokenImageIds.includes(listing._id);
+    });
+  }, [brokenImageIds, listings]);
+
+  const groupedListings = useMemo(() => {
+    return visibleListings.reduce((groups, listing) => {
+      const place = getPlaceName(listing);
+      if (!groups[place]) groups[place] = [];
+      groups[place].push(listing);
+      return groups;
+    }, {});
+  }, [visibleListings]);
+
+  const placeEntries = useMemo(() => Object.entries(groupedListings), [groupedListings]);
+  const selectedListings = useMemo(() => {
+    if (hasSearch) {
+      return visibleListings;
+    }
+
+    return selectedPlace ? groupedListings[selectedPlace] || [] : [];
+  }, [groupedListings, hasSearch, selectedPlace, visibleListings]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveListingId(selectedListings[0]?._id || "");
+  }, [selectedListings]);
+
+  const openPlace = (place) => {
+    navigate(`/listings?place=${encodeURIComponent(place)}`);
+  };
+
+  const updateSearchField = (name, value) => {
+    setSearchForm((current) => ({ ...current, [name]: value }));
+    setSearchError("");
+  };
+
+  const updateChildAge = (index, value) => {
+    setSearchForm((current) => {
+      const childAges = [...current.childAges];
+      childAges[index] = value;
+      return { ...current, childAges };
+    });
+    setSearchError("");
+  };
+
+  const updateGuestPreset = (value) => {
+    const guestPresets = {
+      solo: { adults: 1, children: 0, infants: 0, childAges: [] },
+      couple: { adults: 2, children: 0, infants: 0, childAges: [] },
+      family: { adults: 2, children: 1, infants: 0, childAges: [searchForm.childAges[0] || ""] },
+      familyPlus: { adults: 2, children: 2, infants: 0, childAges: [searchForm.childAges[0] || "", searchForm.childAges[1] || ""] },
+      infant: { adults: 2, children: 0, infants: 1, childAges: [] },
+    };
+
+    setSearchForm((current) => ({ ...current, ...guestPresets[value] }));
+    setSearchError("");
+  };
+
+  const getGuestPreset = () => {
+    if (searchForm.adults === 1 && searchForm.children === 0 && searchForm.infants === 0) return "solo";
+    if (searchForm.adults === 2 && searchForm.children === 0 && searchForm.infants === 0) return "couple";
+    if (searchForm.adults === 2 && searchForm.children === 1) return "family";
+    if (searchForm.adults === 2 && searchForm.children === 2) return "familyPlus";
+    if (searchForm.infants > 0) return "infant";
+    return "solo";
+  };
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+
+    if (searchForm.checkIn && searchForm.checkOut && searchForm.checkOut <= searchForm.checkIn) {
+      setSearchError("Check out must be after check in.");
+      return;
+    }
+
+    if (searchForm.children > 0 && searchForm.childAges.some((age) => age === "")) {
+      setSearchError("Please add every child age.");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (searchForm.destination.trim()) params.set("destination", searchForm.destination.trim());
+    if (searchForm.checkIn) params.set("checkIn", searchForm.checkIn);
+    if (searchForm.checkOut) params.set("checkOut", searchForm.checkOut);
+    params.set("adults", String(searchForm.adults));
+    if (searchForm.children > 0) params.set("children", String(searchForm.children));
+    if (searchForm.infants > 0) params.set("infants", String(searchForm.infants));
+    if (searchForm.childAges.length > 0) params.set("childAges", searchForm.childAges.join(","));
+
+    setGuestPanelOpen(false);
+    navigate(`/listings?${params.toString()}`);
+  };
+
+  const openListing = (id) => {
+    navigate(`/listings/${id}`);
+  };
+
+  const hideBrokenImageListing = (id) => {
+    setBrokenImageIds((currentIds) =>
+      currentIds.includes(id) ? currentIds : [...currentIds, id]
+    );
+  };
 
   if (loading) {
+    return <div className="listings-loading">Loading amazing stays...</div>;
+  }
+
+  if (selectedPlace || hasSearch) {
     return (
-      <div className="listings-page">
-        <div className="listings-state-card">Loading listings...</div>
-      </div>
+      <main className="map-results-page">
+        <div className="results-search-bar">
+          <button type="button" onClick={() => navigate("/listings")} className="results-logo-button">
+            StayNest
+          </button>
+          <div className="results-search-pill">
+            <span>{searchForm.destination || selectedPlace || "Anywhere"}</span>
+            <span>{searchForm.checkIn && searchForm.checkOut ? `${searchForm.checkIn} to ${searchForm.checkOut}` : "Any dates"}</span>
+            <span>{searchForm.adults + searchForm.children} guests</span>
+            <button type="button" onClick={() => navigate("/listings")} aria-label="Clear search" />
+          </div>
+          <button className="results-filter-button" type="button">Filters</button>
+        </div>
+
+        <div className="results-split">
+          <section className="results-list-panel">
+            <h1>{selectedListings.length} {resultLabel}</h1>
+            {error && <div className="listings-error">{error}</div>}
+            {!error && selectedListings.length === 0 && <div className="listings-empty">No stays match this search yet.</div>}
+
+            <div className="results-grid">
+              {selectedListings.map((listing) => (
+                <ListingCard
+                  key={listing._id}
+                  listing={listing}
+                  variant="map"
+                  isActive={String(activeListingId) === String(listing._id)}
+                  onClick={() => openListing(listing._id)}
+                  onHover={() => setActiveListingId(listing._id)}
+                  onImageError={hideBrokenImageListing}
+                />
+              ))}
+            </div>
+          </section>
+
+          <aside className="results-map-panel">
+            <Map
+              listings={selectedListings}
+              activeListingId={activeListingId}
+              onMarkerSelect={setActiveListingId}
+              height="calc(100vh - 92px)"
+            />
+          </aside>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="listings-page">
-      <section className="listings-hero">
-        <div className="listings-intro">
-          <p className="listings-eyebrow">Curated stays</p>
-          <h1 className="listings-title">Find a place that feels calmer before you even book it.</h1>
-          <p className="listings-subtitle">
-            The listings view now uses a warmer background, cleaner cards, and more readable spacing so browsing feels intentional instead of crowded.
-          </p>
-
-          <div className="listings-chip-row">
-            <span className="listings-chip">Editorial card layout</span>
-            <span className="listings-chip">Softer glass background</span>
-            <span className="listings-chip">Cleaner listing details</span>
-          </div>
+    <main className="home-page">
+      <section className="home-hero">
+        <div className="home-hero-content">
+          <h1>Find your next stay</h1>
+          <p>Discover unique homes across India and beyond</p>
+          <form className="home-search-card" aria-label="Search stays" onSubmit={submitSearch}>
+            <label className="home-search-field">
+              <span>Where</span>
+              <input
+                type="text"
+                value={searchForm.destination}
+                onChange={(event) => updateSearchField("destination", event.target.value)}
+                placeholder="Search destinations"
+              />
+            </label>
+            <label className="home-search-field">
+              <span>Check in</span>
+              <input
+                type="date"
+                value={searchForm.checkIn}
+                onChange={(event) => updateSearchField("checkIn", event.target.value)}
+              />
+            </label>
+            <label className="home-search-field">
+              <span>Check out</span>
+              <input
+                type="date"
+                value={searchForm.checkOut}
+                min={searchForm.checkIn || undefined}
+                onChange={(event) => updateSearchField("checkOut", event.target.value)}
+              />
+            </label>
+            <div className="home-search-field home-guest-field">
+              <span>Who</span>
+              <select value={getGuestPreset()} onChange={(event) => updateGuestPreset(event.target.value)}>
+                <option value="solo">1 adult</option>
+                <option value="couple">2 adults</option>
+                <option value="family">Family: 2 adults, 1 child</option>
+                <option value="familyPlus">Family: 2 adults, 2 children</option>
+                <option value="infant">2 adults, 1 infant</option>
+              </select>
+              {searchForm.children > 0 && (
+                <div className="child-age-inline">
+                  {searchForm.childAges.map((age, index) => (
+                    <select
+                      value={age}
+                      key={index}
+                      aria-label={`Child ${index + 1} age`}
+                      onChange={(event) => updateChildAge(index, event.target.value)}
+                    >
+                      <option value="">Child {index + 1} age</option>
+                      {Array.from({ length: 11 }, (_, ageOption) => ageOption + 2).map((ageOption) => (
+                        <option value={ageOption} key={ageOption}>{ageOption}</option>
+                      ))}
+                    </select>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              className="home-search-submit"
+              type="submit"
+              aria-label="Search stays"
+            />
+          </form>
+          {searchError && <div className="home-search-error">{searchError}</div>}
         </div>
-
-        <aside className="listings-highlight">
-          <div>
-            <p className="listings-highlight-label">Available now</p>
-            <strong className="listings-highlight-value">{listings.length}</strong>
-            <p className="listings-highlight-copy">
-              Every listing uses the same refreshed card style, so this page feels consistent from top to bottom.
-            </p>
-          </div>
-
-          <div className="listings-status-row">
-            <div className="listings-status-card">
-              <span>Layout</span>
-              <strong>Clean grid</strong>
-            </div>
-            <div className="listings-status-card">
-              <span>Detail view</span>
-              <strong>Upgraded</strong>
-            </div>
-          </div>
-        </aside>
       </section>
 
-      {error && <div className="listings-error">{error}</div>}
+      <section className="place-rows-shell">
+        {error && <div className="listings-error">{error}</div>}
+        {!error && placeEntries.length === 0 && <div className="listings-empty">No stays found yet.</div>}
 
-      <div className="listings-section-bar">
-        <div>
-          <p className="listings-section-label">Browse stays</p>
-          <h2 className="listings-section-title">{listingCountLabel}</h2>
-        </div>
-        <p className="listings-section-note">Tap any card to open its detail page.</p>
-      </div>
-
-      {!error && listings.length === 0 && (
-        <div className="listings-state-card">
-          No listings yet. Add your first stay and it will appear here in the new layout.
-        </div>
-      )}
-
-      <div className="listings-grid">
-        {listings.map((listing, index) => {
-          const imageUrl = getListingImage(listing);
-          const locationLabel = getListingLocation(listing);
-          const badgeLabel = listing.country || (index % 2 === 0 ? "StayNest pick" : "Featured stay");
-
-          return (
-            <button
-              key={listing._id}
-              type="button"
-              onClick={() => navigate(`/listings/${listing._id}`)}
-              className="listing-card"
-              aria-label={`Open ${listing.title}`}
-            >
-              <div className="listing-media">
-                <img
-                  src={imageUrl}
-                  alt={listing.title}
-                  className="listing-image"
-                  onError={(event) => {
-                    event.target.src = PLACEHOLDER_IMAGE;
-                  }}
-                />
-                <span className="listing-badge">{badgeLabel}</span>
-              </div>
-
-              <div className="listing-card-body">
-                <div className="listing-card-meta">
-                  <p className="listing-location">{locationLabel}</p>
-                  <span className="listing-card-status">Open now</span>
-                </div>
-
-                <h3 className="listing-card-title">{listing.title}</h3>
-                <p className="listing-description">{getDescriptionPreview(listing.description)}</p>
-
-                <div className="listing-card-footer">
-                  <p className="listing-price">
-                    <span className="listing-price-value">{formatPrice(listing.price)}</span> / night
-                  </p>
-                  <span className="listing-cta">View stay</span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+        {placeEntries.map(([place, items]) => (
+          <PlaceRow
+            key={place}
+            place={place}
+            listings={items}
+            onOpenPlace={openPlace}
+            onOpenListing={openListing}
+            onImageError={hideBrokenImageListing}
+          />
+        ))}
+      </section>
+    </main>
   );
 }
-
-export default Listings;
