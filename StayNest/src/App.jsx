@@ -4,14 +4,18 @@ import axios from "axios";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Listings from "./pages/Listings";
-import Show from "./pages/Show";
+import Listings from "./pages/listings";
+import Show from "./pages/show";
 import NewListing from "./pages/NewListing";
 import EditListing from "./pages/EditListing";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer"; 
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import MyBookings from "./pages/MyBookings";
+import Wishlist from "./pages/Wishlist";
+import HostDashboard from "./pages/HostDashboard";
+import Profile from "./pages/Profile";
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -81,6 +85,10 @@ function App(){
           <Routes>
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="/bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
+            <Route path="/wishlist" element={<RequireAuth><Wishlist /></RequireAuth>} />
+            <Route path="/host" element={<RequireAuth><HostDashboard /></RequireAuth>} />
             <Route path="/" element={<Listings />} />
             <Route path="/listings" element={<Listings />} />
             <Route path="/listings/new" element={<RequireAuth><NewListing /></RequireAuth>} />

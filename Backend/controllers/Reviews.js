@@ -1,5 +1,6 @@
 const Review = require("../models/review"); // Fixed variable name to Review
 const Listing = require("../models/Listing"); // Added missing Listing model import
+const Booking = require("../models/Booking");
 const ExpressError = require("../utils/ExpressError"); // Added missing import
 const { reviewSchema } = require("../schema.js"); // Added missing import
 
@@ -72,6 +73,16 @@ module.exports.createreview = async (req, res) => {
 
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
+    }
+
+    const booking = await Booking.findOne({
+        user: req.user._id,
+        listing: id,
+        status: "reserved",
+    });
+
+    if (!booking) {
+        throw new ExpressError(403, "Only guests who booked this stay can review it");
     }
 
     const review = new Review(req.body);

@@ -1,5 +1,17 @@
 const User=require("../models/User");
 const passport = require("passport");
+const Listing = require("../models/Listing");
+const Booking = require("../models/Booking");
+
+function requireLogin(req, res, next) {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+        return res.status(401).json({ error: "Please login first" });
+    }
+
+    next();
+}
+
+module.exports.requireLogin = requireLogin;
 
 module.exports.usersignup=async(req,res)=>{
     let{username,email,password}=req.body;
@@ -62,4 +74,51 @@ module.exports.userme= (req, res) => {
     }
 
     res.json({user:req.user.username, userId:req.user._id});
+};
+
+module.exports.profile = async (req, res) => {
+    const [user, listingsCount, bookingsCount] = await Promise.all([
+        User.findById(req.user._id).select("username email createdAt wishlist").populate("wishlist"),
+        Listing.countDocuments({ owner: req.user._id }),
+        Booking.countDocuments({ user: req.user._id }),
+    ]);
+
+    res.json({
+        user,
+        stats: {
+            listings: listingsCount,
+            bookings: bookingsCount,
+            wishlist: user?.wishlist?.length || 0,
+        },
+    });
+};
+
+module.exports.hostListings = async (req, res) => {
+    const listings = await Listing.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    res.json(listings);
+};
+
+module.exports.getWishlist = async (req, res) => {
+    const user = await User.findById(req.user._id).populate("wishlist");
+    res.json(user?.wishlist || []);
+};
+
+module.exports.toggleWishlist = async (req, res) => {
+    const { listingId } = req.params;
+    const user = await User.findById(req.user._id);
+    const exists = user.wishlist.some((id) => id.equals(listingId));
+
+    if (exists) {
+        user.wishlist.pull(listingId);
+    } else {
+        user.wishlist.addToSet(listingId);
+    }
+
+    await user.save();
+    await user.populate("wishlist");
+
+    res.json({
+        saved: !exists,
+        wishlist: user.wishlist,
+    });
 };

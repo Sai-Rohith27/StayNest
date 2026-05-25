@@ -348,6 +348,11 @@
   content: "\2665";
 }
 
+.stay-tile-heart.is-saved::before {
+  content: "\2665";
+  color: #ff385c;
+}
+
 .stay-tile-body {
   padding-top: 12px;
 }
@@ -490,17 +495,39 @@
   margin-top: 13px;
 }
 
-.results-filter-button {
-  appearance: none;
-  min-height: 48px;
-  width: fit-content;
+.results-filter-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.results-filter-strip label {
+  min-height: 42px;
   border: 1px solid #dddddd;
   border-radius: 999px;
-  padding: 0 22px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: #ffffff;
-  color: var(--ink-900);
-  cursor: pointer;
+  color: var(--ink-700);
+  font-size: 0.86rem;
   font-weight: 900;
+}
+
+.results-filter-strip input,
+.results-filter-strip select {
+  max-width: 86px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-900);
+  font: inherit;
+  outline: none;
+}
+
+.results-check-filter input {
+  width: auto;
 }
 
 .results-split {

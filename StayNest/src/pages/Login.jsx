@@ -1,11 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Signup.css";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -47,7 +48,7 @@ function Login() {
 
       toast.success("Logged in successfully.");
       window.dispatchEvent(new Event("staynest-auth-change"));
-      navigate("/listings/new");
+      navigate(location.state?.from || "/listings", { replace: true });
     } catch (err) {
       console.log(err);
       const message = err.response?.data?.error || "Login failed. Please try again.";

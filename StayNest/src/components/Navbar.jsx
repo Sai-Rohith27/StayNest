@@ -87,6 +87,15 @@ function Navbar() {
         <div className="navbar-actions">
           {user ? (
             <>
+              <NavLink to="/wishlist" className={({ isActive }) => `navbar-auth-link${isActive ? " is-active" : ""}`}>
+                Wishlist
+              </NavLink>
+              <NavLink to="/bookings" className={({ isActive }) => `navbar-auth-link${isActive ? " is-active" : ""}`}>
+                Trips
+              </NavLink>
+              <NavLink to="/profile" className={({ isActive }) => `navbar-auth-link${isActive ? " is-active" : ""}`}>
+                Profile
+              </NavLink>
               <span className="navbar-user">Hi, {user}</span>
               <button className="navbar-auth-button" type="button" onClick={handleLogout}>
                 Logout

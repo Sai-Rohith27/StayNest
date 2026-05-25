@@ -8,6 +8,7 @@ const ExpressError = require("./utils/ExpressError");
 const listingsroutes = require("./routes/Listings");
 const reviewsroutes = require("./routes/Review");
 const userroutes=require("./routes/User");
+const bookingroutes = require("./routes/Bookings");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/User");
@@ -29,13 +30,15 @@ main();
 // --- 1. GENERAL MIDDLEWARE ---
 app.use(cors({
     origin: [
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5174"
     ],
     credentials: true
-})); 
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
@@ -59,6 +62,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 // --- 3. ROUTES ---
 app.use("/", userroutes);
+app.use("/bookings", bookingroutes);
 app.use("/listings/:id/reviews", reviewsroutes);
 app.use("/listings", listingsroutes);
 

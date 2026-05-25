@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "./Listings.css";
-import Map from "../components/map";
+import StayMap from "../components/map";
 import { formatPrice, getListingImage, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 
 const countryToPlace = {
@@ -35,7 +36,7 @@ function getTotalPrice(listing) {
   return Number(listing.price || 0) * getNightCount(listing);
 }
 
-function ListingCard({ listing, variant = "row", isActive = false, onClick, onHover, onImageError }) {
+function ListingCard({ listing, variant = "row", isActive = false, isSaved = false, onClick, onHover, onImageError, onSave }) {
   const imageUrl = getListingImage(listing);
   const rating = Number(listing.rating || 0);
   const nights = getNightCount(listing);
@@ -57,10 +58,13 @@ function ListingCard({ listing, variant = "row", isActive = false, onClick, onHo
         />
         {listing.guestFavorite && <span className="stay-tile-badge">Guest favourite</span>}
         <button
-          className="stay-tile-heart"
+          className={`stay-tile-heart${isSaved ? " is-saved" : ""}`}
           type="button"
           aria-label={`Save ${listing.title}`}
-          onClick={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onSave?.(listing._id);
+          }}
         />
       </div>
 
@@ -86,7 +90,7 @@ function ListingCard({ listing, variant = "row", isActive = false, onClick, onHo
   );
 }
 
-function PlaceRow({ place, listings, onOpenPlace, onOpenListing, onImageError }) {
+function PlaceRow({ place, listings, onOpenPlace, onOpenListing, onImageError, onSave, savedListingIds = [] }) {
   const trackRef = useRef(null);
 
   const scrollRow = (direction) => {
@@ -117,6 +121,8 @@ function PlaceRow({ place, listings, onOpenPlace, onOpenListing, onImageError })
             listing={listing}
             onClick={() => onOpenListing(listing._id)}
             onImageError={onImageError}
+            onSave={onSave}
+            isSaved={savedListingIds.includes(listing._id)}
           />
         ))}
       </div>
@@ -130,6 +136,13 @@ export default function Listings() {
   const [error, setError] = useState("");
   const [activeListingId, setActiveListingId] = useState("");
   const [brokenImageIds, setBrokenImageIds] = useState([]);
+  const [savedListingIds, setSavedListingIds] = useState([]);
+  const [filters, setFilters] = useState({
+    maxPrice: "",
+    minRating: "",
+    freeCancellation: false,
+    guestFavorite: false,
+  });
   const [searchForm, setSearchForm] = useState(emptySearchForm);
   const [searchError, setSearchError] = useState("");
   const navigate = useNavigate();
@@ -155,6 +168,7 @@ export default function Listings() {
       .filter(Boolean)
       .slice(0, children);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchForm({
       destination: searchParams.get("destination") || searchParams.get("place") || "",
       checkIn: searchParams.get("checkIn") || "",
@@ -167,6 +181,16 @@ export default function Listings() {
   }, [location.search]);
 
   useEffect(() => {
+    axios.get("http://localhost:3030/wishlist", { withCredentials: true })
+      .then((res) => {
+        const ids = Array.isArray(res.data) ? res.data.map((listing) => listing._id) : [];
+        setSavedListingIds(ids);
+      })
+      .catch(() => setSavedListingIds([]));
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     axios.get(`http://localhost:3030/listings${location.search}`)
       .then((res) => {
@@ -183,9 +207,14 @@ export default function Listings() {
   const visibleListings = useMemo(() => {
     return listings.filter((listing) => {
       const imageUrl = getListingImage(listing);
-      return imageUrl !== PLACEHOLDER_IMAGE && !brokenImageIds.includes(listing._id);
+      if (imageUrl === PLACEHOLDER_IMAGE || brokenImageIds.includes(listing._id)) return false;
+      if (filters.maxPrice && Number(listing.price || 0) > Number(filters.maxPrice)) return false;
+      if (filters.minRating && Number(listing.rating || 0) < Number(filters.minRating)) return false;
+      if (filters.freeCancellation && !listing.freeCancellation) return false;
+      if (filters.guestFavorite && !listing.guestFavorite) return false;
+      return true;
     });
-  }, [brokenImageIds, listings]);
+  }, [brokenImageIds, filters, listings]);
 
   const groupedListings = useMemo(() => {
     return visibleListings.reduce((groups, listing) => {
@@ -197,6 +226,22 @@ export default function Listings() {
   }, [visibleListings]);
 
   const placeEntries = useMemo(() => Object.entries(groupedListings), [groupedListings]);
+  const searchSuggestions = useMemo(() => {
+    const suggestionMap = new globalThis.Map();
+
+    visibleListings.forEach((listing) => {
+      [
+        listing.title,
+        listing.location,
+        getPlaceName(listing),
+        listing.country,
+      ].filter(Boolean).forEach((value) => {
+        suggestionMap.set(String(value).toLowerCase(), String(value));
+      });
+    });
+
+    return Array.from(suggestionMap.values()).sort((a, b) => a.localeCompare(b));
+  }, [visibleListings]);
   const selectedListings = useMemo(() => {
     if (hasSearch) {
       return visibleListings;
@@ -272,7 +317,16 @@ export default function Listings() {
     if (searchForm.infants > 0) params.set("infants", String(searchForm.infants));
     if (searchForm.childAges.length > 0) params.set("childAges", searchForm.childAges.join(","));
 
-    setGuestPanelOpen(false);
+    const exactListingMatch = visibleListings.find((listing) => {
+      const searchValue = searchForm.destination.trim().toLowerCase();
+      return searchValue && String(listing.title || "").trim().toLowerCase() === searchValue;
+    });
+
+    if (exactListingMatch?._id) {
+      navigate(`/listings/${exactListingMatch._id}?${params.toString()}`);
+      return;
+    }
+
     navigate(`/listings?${params.toString()}`);
   };
 
@@ -280,10 +334,29 @@ export default function Listings() {
     navigate(`/listings/${id}`);
   };
 
+  const toggleSavedListing = async (id) => {
+    try {
+      const res = await axios.post(`http://localhost:3030/wishlist/${id}`, {}, { withCredentials: true });
+      setSavedListingIds((currentIds) =>
+        res.data.saved
+          ? [...new Set([...currentIds, id])]
+          : currentIds.filter((savedId) => savedId !== id)
+      );
+      toast.success(res.data.saved ? "Saved to wishlist." : "Removed from wishlist.");
+    } catch {
+      toast.error("Please login first to save stays.");
+      navigate("/login");
+    }
+  };
+
   const hideBrokenImageListing = (id) => {
     setBrokenImageIds((currentIds) =>
       currentIds.includes(id) ? currentIds : [...currentIds, id]
     );
+  };
+
+  const updateFilter = (name, value) => {
+    setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
   };
 
   if (loading) {
@@ -303,7 +376,41 @@ export default function Listings() {
             <span>{searchForm.adults + searchForm.children} guests</span>
             <button type="button" onClick={() => navigate("/listings")} aria-label="Clear search" />
           </div>
-          <button className="results-filter-button" type="button">Filters</button>
+          <div className="results-filter-strip">
+            <label>
+              Max price
+              <input
+                type="number"
+                value={filters.maxPrice}
+                onChange={(event) => updateFilter("maxPrice", event.target.value)}
+                placeholder="Any"
+              />
+            </label>
+            <label>
+              Rating
+              <select value={filters.minRating} onChange={(event) => updateFilter("minRating", event.target.value)}>
+                <option value="">Any</option>
+                <option value="4.5">4.5+</option>
+                <option value="4.8">4.8+</option>
+              </select>
+            </label>
+            <label className="results-check-filter">
+              <input
+                type="checkbox"
+                checked={filters.freeCancellation}
+                onChange={(event) => updateFilter("freeCancellation", event.target.checked)}
+              />
+              Free cancellation
+            </label>
+            <label className="results-check-filter">
+              <input
+                type="checkbox"
+                checked={filters.guestFavorite}
+                onChange={(event) => updateFilter("guestFavorite", event.target.checked)}
+              />
+              Guest favourite
+            </label>
+          </div>
         </div>
 
         <div className="results-split">
@@ -322,13 +429,15 @@ export default function Listings() {
                   onClick={() => openListing(listing._id)}
                   onHover={() => setActiveListingId(listing._id)}
                   onImageError={hideBrokenImageListing}
+                  onSave={toggleSavedListing}
+                  isSaved={savedListingIds.includes(listing._id)}
                 />
               ))}
             </div>
           </section>
 
           <aside className="results-map-panel">
-            <Map
+            <StayMap
               listings={selectedListings}
               activeListingId={activeListingId}
               onMarkerSelect={setActiveListingId}
@@ -351,10 +460,16 @@ export default function Listings() {
               <span>Where</span>
               <input
                 type="text"
+                list="staynest-search-suggestions"
                 value={searchForm.destination}
                 onChange={(event) => updateSearchField("destination", event.target.value)}
-                placeholder="Search destinations"
+                placeholder="Search destinations or stays"
               />
+              <datalist id="staynest-search-suggestions">
+                {searchSuggestions.map((suggestion) => (
+                  <option value={suggestion} key={suggestion} />
+                ))}
+              </datalist>
             </label>
             <label className="home-search-field">
               <span>Check in</span>
@@ -422,6 +537,8 @@ export default function Listings() {
             onOpenPlace={openPlace}
             onOpenListing={openListing}
             onImageError={hideBrokenImageListing}
+            onSave={toggleSavedListing}
+            savedListingIds={savedListingIds}
           />
         ))}
       </section>

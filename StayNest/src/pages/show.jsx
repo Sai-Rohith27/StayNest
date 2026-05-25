@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Show.css";
 import { formatPrice, getListingGallery, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
@@ -12,7 +12,7 @@ import {
 } from "../utils/reviewFormValidation";
 import { isLoginRequiredError, showLoginRequired } from "../utils/authUi";
 import { readImageFiles } from "../utils/imageUpload";
-import Map from "../components/map";
+import StayMap from "../components/map";
 
 function StarRating({ rating, className = "" }) {
   const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
@@ -51,6 +51,7 @@ function ReviewStarInput({ value, onChange }) {
 function Show() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [listing, setListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,14 @@ function Show() {
   const [reviewTouched, setReviewTouched] = useState(reviewTouchedDefaults);
   const [reviewErrors, setReviewErrors] = useState({});
   const [reviewMessage, setReviewMessage] = useState("");
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    checkIn: "",
+    checkOut: "",
+    guests: 1,
+    cardName: "",
+    cardNumber: "",
+  });
 
   // --- MAP STATES ---
   const [coordinates, setCoordinates] = useState(null);
@@ -100,6 +109,19 @@ function Show() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const adults = Number(params.get("adults") || 1);
+    const children = Number(params.get("children") || 0);
+
+    setBookingForm((currentForm) => ({
+      ...currentForm,
+      checkIn: params.get("checkIn") || currentForm.checkIn,
+      checkOut: params.get("checkOut") || currentForm.checkOut,
+      guests: Math.max(1, adults + children),
+    }));
+  }, [location.search]);
 
   // FETCH CURRENT USER
   useEffect(() => {
@@ -316,6 +338,58 @@ function Show() {
     }
   };
 
+  const updateBookingField = (name, value) => {
+    setBookingForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }));
+  };
+
+  const getBookingNights = () => {
+    if (!bookingForm.checkIn || !bookingForm.checkOut) {
+      return 1;
+    }
+
+    const startDate = new Date(bookingForm.checkIn);
+    const endDate = new Date(bookingForm.checkOut);
+    const diff = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+    return Math.max(1, diff || 1);
+  };
+
+  const handleReserveSubmit = async (event) => {
+    event.preventDefault();
+
+    if (bookingForm.checkIn && bookingForm.checkOut && bookingForm.checkOut <= bookingForm.checkIn) {
+      toast.error("Check out must be after check in.");
+      return;
+    }
+
+    if (!bookingForm.checkIn || !bookingForm.checkOut) {
+      toast.error("Please choose check-in and check-out dates.");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:3030/bookings", {
+        listingId: id,
+        checkIn: bookingForm.checkIn,
+        checkOut: bookingForm.checkOut,
+        guests: bookingForm.guests,
+      }, { withCredentials: true });
+
+      toast.success("Stay reserved successfully.");
+      navigate("/bookings");
+    } catch (err) {
+      if (isLoginRequiredError(err)) {
+        showLoginRequired(navigate, "Please login first to reserve this stay.");
+        return;
+      }
+
+      toast.error(err.response?.data?.error || "Unable to reserve this stay.");
+    }
+  };
+
   const updateReviewField = (name, value) => {
     setReviewForm((currentForm) => ({
       ...currentForm,
@@ -430,6 +504,10 @@ function Show() {
     submittedReviews,
     hiddenReviewIds
   );
+  const bookingNights = getBookingNights();
+  const bookingBaseTotal = Number(listing.price || 0) * bookingNights;
+  const bookingServiceFee = Math.round(bookingBaseTotal * 0.12);
+  const bookingTotal = bookingBaseTotal + bookingServiceFee;
 
   return (
     <div className="show-page">
@@ -464,7 +542,7 @@ function Show() {
               <span className="show-badge">StayNest pick</span>
               <p className="show-overlay-location">{locationLabel}</p>
             </div>
-            <button className="show-gallery-button" type="button">
+            <button className="show-gallery-button" type="button" onClick={() => setGalleryOpen(true)}>
               Show all photos
             </button>
           </div>
@@ -519,6 +597,27 @@ function Show() {
           </aside>
         </section>
 
+        {galleryOpen && (
+          <div className="show-gallery-modal" role="dialog" aria-modal="true">
+            <div className="show-gallery-modal-head">
+              <h2>{listing.title}</h2>
+              <button type="button" onClick={() => setGalleryOpen(false)}>Close</button>
+            </div>
+            <div className="show-gallery-modal-grid">
+              {galleryImages.map((photoUrl, photoIndex) => (
+                <img
+                  src={photoUrl}
+                  alt={`${listing.title} gallery ${photoIndex + 1}`}
+                  key={`${photoUrl}-modal-${photoIndex}`}
+                  onError={(event) => {
+                    event.target.src = PLACEHOLDER_IMAGE;
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <section className="show-content-grid">
           <article className="show-panel">
             <p className="show-panel-label">About this stay</p>
@@ -527,7 +626,7 @@ function Show() {
               {String(listing.description ?? "").trim() || "No description has been added for this listing yet."}
             </p>
           </article>
-          <aside className="show-panel">
+          <aside className="show-panel show-quick-panel">
             <p className="show-panel-label">Quick details</p>
             <h2 className="show-panel-title">At a glance</h2>
             <div className="show-details-list">
@@ -544,6 +643,82 @@ function Show() {
                 <strong>#{String(id).slice(-6).toUpperCase()}</strong>
               </div>
             </div>
+
+            <form className="show-reserve-card" onSubmit={handleReserveSubmit}>
+              <div className="show-reserve-head">
+                <div>
+                  <strong>{formatPrice(listing.price)}</strong>
+                  <span>/ night</span>
+                </div>
+                <small>Reserve this stay</small>
+              </div>
+
+              <div className="show-reserve-grid">
+                <label>
+                  <span>Check in</span>
+                  <input
+                    type="date"
+                    value={bookingForm.checkIn}
+                    onChange={(event) => updateBookingField("checkIn", event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>Check out</span>
+                  <input
+                    type="date"
+                    value={bookingForm.checkOut}
+                    min={bookingForm.checkIn || undefined}
+                    onChange={(event) => updateBookingField("checkOut", event.target.value)}
+                  />
+                </label>
+                <label className="show-reserve-full">
+                  <span>Guests</span>
+                  <select
+                    value={bookingForm.guests}
+                    onChange={(event) => updateBookingField("guests", Number(event.target.value))}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((guestCount) => (
+                      <option value={guestCount} key={guestCount}>
+                        {guestCount} guest{guestCount > 1 ? "s" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="show-reserve-full">
+                  <span>Name on card</span>
+                  <input
+                    type="text"
+                    value={bookingForm.cardName}
+                    onChange={(event) => updateBookingField("cardName", event.target.value)}
+                    placeholder="Demo payment"
+                  />
+                </label>
+                <label className="show-reserve-full">
+                  <span>Card number</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={bookingForm.cardNumber}
+                    onChange={(event) => updateBookingField("cardNumber", event.target.value)}
+                    placeholder="4242 4242 4242 4242"
+                  />
+                </label>
+              </div>
+
+              <div className="show-reserve-total">
+                <span>{formatPrice(listing.price)} x {bookingNights} night{bookingNights > 1 ? "s" : ""}</span>
+                <strong>{formatPrice(bookingBaseTotal)}</strong>
+                <span>Service fee</span>
+                <strong>{formatPrice(bookingServiceFee)}</strong>
+                <span>Total before taxes</span>
+                <strong>{formatPrice(bookingTotal)}</strong>
+              </div>
+
+              <button className="show-action-button primary show-reserve-button" type="submit">
+                Reserve
+              </button>
+              <p className="show-reserve-note">Payment is UI-only for now.</p>
+            </form>
           </aside>
         </section>
 
@@ -560,7 +735,7 @@ function Show() {
               Loading neighborhood map...
             </div>
           ) : (
-            <Map coordinates={coordinates} locationName={locationLabel} />
+            <StayMap coordinates={coordinates} locationName={locationLabel} />
           )}
         </section>
         {/* -------------------------------- */}

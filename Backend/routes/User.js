@@ -19,4 +19,16 @@ router.route("/logout")
 router.route("/me")
     .get(UserController.userme);
 
+router.route("/profile")
+    .get(UserController.requireLogin, wrapAsync(UserController.profile));
+
+router.route("/host/listings")
+    .get(UserController.requireLogin, wrapAsync(UserController.hostListings));
+
+router.route("/wishlist")
+    .get(UserController.requireLogin, wrapAsync(UserController.getWishlist));
+
+router.route("/wishlist/:listingId")
+    .post(UserController.requireLogin, wrapAsync(UserController.toggleWishlist));
+
 module.exports = router;
