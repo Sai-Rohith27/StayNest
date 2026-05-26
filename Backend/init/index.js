@@ -20,7 +20,7 @@ async function main() {
     console.log("DB connection error:", err);
   } finally {
     await mongoose.connection.close();
-    console.log("MongoDB connection closed");
+    console.log("MongoDB connection done! closed");
   }
 }
 
