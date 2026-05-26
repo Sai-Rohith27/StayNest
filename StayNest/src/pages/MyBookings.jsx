@@ -73,6 +73,7 @@ export default function MyBookings() {
                 <span className={`dashboard-status ${booking.status}`}>{booking.status}</span>
               </div>
               <div className="dashboard-actions">
+                <Link className="dashboard-button" to={`/bookings/${booking._id}`}>Trip details</Link>
                 <Link className="dashboard-button" to={`/listings/${booking.listing?._id}`}>View stay</Link>
                 {booking.status !== "cancelled" && (
                   <button className="dashboard-button danger" type="button" onClick={() => cancelBooking(booking._id)}>

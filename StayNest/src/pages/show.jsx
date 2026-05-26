@@ -386,7 +386,10 @@ function Show() {
         return;
       }
 
-      toast.error(err.response?.data?.error || "Unable to reserve this stay.");
+      const status = err.response?.status;
+      toast.error(status === 409
+        ? "Those dates are already booked. Please choose different dates."
+        : err.response?.data?.error || "Unable to reserve this stay.");
     }
   };
 

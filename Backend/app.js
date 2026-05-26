@@ -14,15 +14,20 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/User");
 const app = express();
 const cleanEnv = (value) => String(value || "").trim().replace(/;+$/, "");
-const mongo_url = cleanEnv(process.env.MONGO_URL) || "mongodb://127.0.0.1:27017/StayNest";
+const db_url = cleanEnv(process.env.ATLAS_URL) || "mongodb://127.0.0.1:27017/StayNest";
 const port = Number(cleanEnv(process.env.PORT)) || 3030;
 
 async function main() {
     try {
-        await mongoose.connect(mongo_url);
+        await mongoose.connect(db_url);
         console.log("Mongo Db connected");
     } catch (err) {
-        console.log(err);
+        console.error("MongoDB connection failed:", err.message);
+        if (/bad auth|authentication failed/i.test(err.message)) {
+            console.error("Check Backend/.env ATLAS_URL username/password against your MongoDB Atlas Database Access user.");
+        } else if (/querySrv|ENOTFOUND/i.test(err.message)) {
+            console.error("Check that ATLAS_URL contains the full Atlas host, like cluster0.xxxxx.mongodb.net, and URL-encode special password characters.");
+        }
     }
 }
 main();

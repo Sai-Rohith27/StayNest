@@ -74,14 +74,6 @@ function Navbar() {
               Stays
             </NavLink>
           </div>
-
-          <button className="navbar-search" type="button" onClick={() => navigate("/listings")}>
-            <span className="navbar-search-copy">
-              <strong>Search stays</strong>
-              <small>Find homes by place</small>
-            </span>
-            <span className="navbar-search-icon" aria-hidden="true" />
-          </button>
         </div>
 
         <div className="navbar-actions">

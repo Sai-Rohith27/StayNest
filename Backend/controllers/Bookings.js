@@ -17,6 +17,10 @@ function getNightCount(checkIn, checkOut) {
     return Math.max(1, diff || 1);
 }
 
+function hasOverlap(startA, endA, startB, endB) {
+    return startA < endB && endA > startB;
+}
+
 module.exports.isLoggedIn = isLoggedIn;
 
 module.exports.createBooking = async (req, res) => {
@@ -36,6 +40,19 @@ module.exports.createBooking = async (req, res) => {
     const listing = await Listing.findById(listingId);
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
+    }
+
+    const existingBookings = await Booking.find({
+        listing: listing._id,
+        status: "reserved",
+    });
+
+    const overlappingBooking = existingBookings.find((booking) =>
+        hasOverlap(startDate, endDate, booking.checkIn, booking.checkOut)
+    );
+
+    if (overlappingBooking) {
+        throw new ExpressError(409, "This stay is already booked for those dates");
     }
 
     const nightCount = getNightCount(startDate, endDate);
@@ -59,6 +76,30 @@ module.exports.getMyBookings = async (req, res) => {
     const bookings = await Booking.find({ user: req.user._id })
         .sort({ createdAt: -1 })
         .populate("listing");
+
+    res.json(bookings);
+};
+
+module.exports.getBooking = async (req, res) => {
+    const booking = await Booking.findOne({
+        _id: req.params.bookingId,
+        user: req.user._id,
+    }).populate("listing");
+
+    if (!booking) {
+        throw new ExpressError(404, "Booking not found");
+    }
+
+    res.json(booking);
+};
+
+module.exports.getHostBookings = async (req, res) => {
+    const hostListings = await Listing.find({ owner: req.user._id }).select("_id");
+    const listingIds = hostListings.map((listing) => listing._id);
+    const bookings = await Booking.find({ listing: { $in: listingIds } })
+        .sort({ createdAt: -1 })
+        .populate("listing")
+        .populate("user", "username email");
 
     res.json(bookings);
 };

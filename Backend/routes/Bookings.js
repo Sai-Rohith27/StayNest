@@ -9,6 +9,12 @@ router.route("/")
     .get(wrapAsync(BookingController.getMyBookings))
     .post(wrapAsync(BookingController.createBooking));
 
+router.route("/host")
+    .get(wrapAsync(BookingController.getHostBookings));
+
+router.route("/:bookingId")
+    .get(wrapAsync(BookingController.getBooking));
+
 router.route("/:bookingId/cancel")
     .patch(wrapAsync(BookingController.cancelBooking));
 

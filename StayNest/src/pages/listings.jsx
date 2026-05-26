@@ -22,6 +22,14 @@ const emptySearchForm = {
   childAges: [],
 };
 
+function getStoredRecentSearches() {
+  try {
+    return JSON.parse(localStorage.getItem("staynest-recent-searches") || "[]");
+  } catch {
+    return [];
+  }
+}
+
 function getPlaceName(listing) {
   return countryToPlace[listing.country] || listing.country || "India";
 }
@@ -145,6 +153,7 @@ export default function Listings() {
   });
   const [searchForm, setSearchForm] = useState(emptySearchForm);
   const [searchError, setSearchError] = useState("");
+  const [recentSearches, setRecentSearches] = useState(getStoredRecentSearches);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -323,8 +332,16 @@ export default function Listings() {
     });
 
     if (exactListingMatch?._id) {
+      const nextRecent = [searchForm.destination.trim(), ...recentSearches.filter((item) => item !== searchForm.destination.trim())].slice(0, 5);
+      localStorage.setItem("staynest-recent-searches", JSON.stringify(nextRecent));
       navigate(`/listings/${exactListingMatch._id}?${params.toString()}`);
       return;
+    }
+
+    if (searchForm.destination.trim()) {
+      const nextRecent = [searchForm.destination.trim(), ...recentSearches.filter((item) => item !== searchForm.destination.trim())].slice(0, 5);
+      localStorage.setItem("staynest-recent-searches", JSON.stringify(nextRecent));
+      setRecentSearches(nextRecent);
     }
 
     navigate(`/listings?${params.toString()}`);
@@ -418,6 +435,16 @@ export default function Listings() {
             <h1>{selectedListings.length} {resultLabel}</h1>
             {error && <div className="listings-error">{error}</div>}
             {!error && selectedListings.length === 0 && <div className="listings-empty">No stays match this search yet.</div>}
+            {!error && selectedListings.length === 0 && (
+              <div className="results-suggestion-box">
+                Try a wider date range, remove filters, or search one of these recent places:
+                {recentSearches.map((item) => (
+                  <button type="button" key={item} onClick={() => updateSearchField("destination", item)}>
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="results-grid">
               {selectedListings.map((listing) => (
@@ -466,6 +493,9 @@ export default function Listings() {
                 placeholder="Search destinations or stays"
               />
               <datalist id="staynest-search-suggestions">
+                {recentSearches.map((suggestion) => (
+                  <option value={suggestion} key={`recent-${suggestion}`} />
+                ))}
                 {searchSuggestions.map((suggestion) => (
                   <option value={suggestion} key={suggestion} />
                 ))}

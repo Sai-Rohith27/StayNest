@@ -7,11 +7,18 @@ import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } f
 
 export default function HostDashboard() {
   const [listings, setListings] = useState([]);
+  const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:3030/host/listings", { withCredentials: true })
-      .then((res) => setListings(Array.isArray(res.data) ? res.data : []))
+    Promise.all([
+      axios.get("http://localhost:3030/host/listings", { withCredentials: true }),
+      axios.get("http://localhost:3030/bookings/host", { withCredentials: true }),
+    ])
+      .then(([listingRes, bookingRes]) => {
+        setListings(Array.isArray(listingRes.data) ? listingRes.data : []);
+        setReservations(Array.isArray(bookingRes.data) ? bookingRes.data : []);
+      })
       .catch(() => toast.error("Unable to load host dashboard."))
       .finally(() => setLoading(false));
   }, []);
@@ -29,6 +36,39 @@ export default function HostDashboard() {
 
       {loading && <div className="dashboard-state">Loading your listings...</div>}
       {!loading && listings.length === 0 && <div className="dashboard-state">You have not hosted a stay yet.</div>}
+
+      {!loading && reservations.length > 0 && (
+        <>
+          <header className="dashboard-header compact">
+            <div>
+              <p className="dashboard-kicker">Reservations</p>
+              <h2 className="dashboard-section-title">Guest bookings</h2>
+            </div>
+          </header>
+          <section className="dashboard-grid">
+            {reservations.map((booking) => (
+              <article className="dashboard-card" key={booking._id}>
+                <div className="dashboard-card-body">
+                  <h3>{booking.listing?.title || "Stay"}</h3>
+                  <p>{booking.user?.username || "Guest"} · {booking.user?.email || "No email"}</p>
+                  <p>{new Date(booking.checkIn).toLocaleDateString()} to {new Date(booking.checkOut).toLocaleDateString()}</p>
+                  <div className="dashboard-card-meta">
+                    <strong>{formatPrice(booking.totalPrice)}</strong>
+                    <span className={`dashboard-status ${booking.status}`}>{booking.status}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </section>
+        </>
+      )}
+
+      <header className="dashboard-header compact">
+        <div>
+          <p className="dashboard-kicker">Listings</p>
+          <h2 className="dashboard-section-title">Your stays</h2>
+        </div>
+      </header>
 
       <section className="dashboard-grid">
         {listings.map((listing) => (

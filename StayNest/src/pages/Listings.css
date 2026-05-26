@@ -554,6 +554,30 @@
   gap: 64px 38px;
 }
 
+.results-suggestion-box {
+  margin: -12px 0 24px;
+  padding: 16px;
+  border: 1px solid rgba(122, 78, 53, 0.12);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(255, 248, 239, 0.72);
+  color: var(--ink-700);
+  font-weight: 800;
+}
+
+.results-suggestion-box button {
+  border: 1px solid rgba(122, 78, 53, 0.14);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: var(--ink-900);
+  cursor: pointer;
+  font-weight: 900;
+}
+
 .stay-tile-map .stay-tile-media {
   aspect-ratio: 1.36 / 1;
 }

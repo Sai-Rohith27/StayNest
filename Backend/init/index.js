@@ -1,12 +1,15 @@
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const Listing = require("../models/listing.js");
+const Booking = require("../models/Booking.js");
+const Review = require("../models/review.js");
+const User = require("../models/User.js");
 const initData = require("./data");
 
 dotenv.config();
 
 const cleanEnv = (value) => String(value || "").trim().replace(/;+$/, "");
-const MONGO_URL = cleanEnv(process.env.MONGO_URL) || "mongodb://127.0.0.1:27017/StayNest";
+const MONGO_URL = cleanEnv(process.env.ATLAS_URL) || "mongodb://127.0.0.1:27017/StayNest";
 
 async function main() {
   try {
@@ -22,6 +25,9 @@ async function main() {
 }
 
 async function initDB() {
+  await Booking.deleteMany({});
+  await Review.deleteMany({});
+  await User.updateMany({}, { $set: { wishlist: [] } });
   await Listing.deleteMany({});
   await Listing.insertMany(initData.data);
   

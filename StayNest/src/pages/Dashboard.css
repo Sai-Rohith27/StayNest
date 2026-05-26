@@ -28,6 +28,23 @@
   line-height: 1.05;
 }
 
+.dashboard-section-title {
+  margin-top: 6px;
+  color: var(--ink-900);
+  font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+  font-weight: 900;
+}
+
+.dashboard-header.compact {
+  margin-top: 28px;
+  margin-bottom: 14px;
+}
+
+.booking-detail-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1fr);
+}
+
 .dashboard-subtitle {
   margin-top: 10px;
   color: var(--ink-700);

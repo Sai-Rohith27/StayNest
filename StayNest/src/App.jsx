@@ -16,6 +16,7 @@ import MyBookings from "./pages/MyBookings";
 import Wishlist from "./pages/Wishlist";
 import HostDashboard from "./pages/HostDashboard";
 import Profile from "./pages/Profile";
+import BookingDetail from "./pages/BookingDetail";
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -87,6 +88,7 @@ function App(){
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
+            <Route path="/bookings/:bookingId" element={<RequireAuth><BookingDetail /></RequireAuth>} />
             <Route path="/wishlist" element={<RequireAuth><Wishlist /></RequireAuth>} />
             <Route path="/host" element={<RequireAuth><HostDashboard /></RequireAuth>} />
             <Route path="/" element={<Listings />} />
