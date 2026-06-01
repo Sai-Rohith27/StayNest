@@ -12,14 +12,17 @@ const bookingroutes = require("./routes/Bookings");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/User");
+const Listing = require("./models/listing");
 const app = express();
 const cleanEnv = (value) => String(value || "").trim().replace(/;+$/, "");
 const db_url = cleanEnv(process.env.ATLAS_URL) || "mongodb://127.0.0.1:27017/StayNest";
 const port = Number(cleanEnv(process.env.PORT)) || 3030;
 
+mongoose.set("bufferCommands", false);
+
 async function main() {
     try {
-        await mongoose.connect(db_url);
+        await mongoose.connect(db_url, { serverSelectionTimeoutMS: 5000 });
         console.log("Mongo Db connected");
     } catch (err) {
         console.error("MongoDB connection failed:", err.message);
@@ -40,7 +43,8 @@ app.use(cors({
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",
-        "http://127.0.0.1:5174"
+        "http://127.0.0.1:5174",
+        "https://your-future-vercel-app-name.vercel.app"
     ],
     credentials: true
 }));
@@ -49,14 +53,22 @@ app.use(cookieParser());
 
 // --- 2. SESSION CONFIGURATION ---
 // MUST be placed here, before your routes!
+
+// 🚨 CRITICAL FIX 1: Tell Express to trust the Render proxy network
+app.set('trust proxy', 1); 
+
 const sessionOptions = {
-    secret: "staynedt_super_secret_code", 
+    // 🚨 Changed to check .env first, fallback to hardcoded if local
+    secret: process.env.SESSION_SECRET || "staynedt_super_secret_code", 
     resave: false,
     saveUninitialized: true,
     cookie: {
         expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // Expires in 7 days
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true // Secures cookie from malicious JavaScript
+        httpOnly: true, // Secures cookie from malicious JavaScript
+        // 🚨 CRITICAL FIX 1: Enable secure cross-origin cookies on production
+        secure: process.env.NODE_ENV === "production", 
+        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax'
     }
 };
 app.use(session(sessionOptions));
@@ -65,6 +77,16 @@ app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+    if (mongoose.connection.readyState !== 1 && req.path !== "/") {
+        return res.status(503).json({
+            error: "Database is not connected. Check MongoDB Atlas Network Access/IP whitelist and ATLAS_URL.",
+        });
+    }
+    next();
+});
+
 // --- 3. ROUTES ---
 app.use("/", userroutes);
 app.use("/bookings", bookingroutes);
@@ -84,6 +106,20 @@ app.get("/count", (req, res) => {
 app.get("/", (req, res) => {
     console.dir(req.cookies);
     res.send("Hi, Welcome to the Staynedt API");
+});
+
+app.get("/debug/listings-count", async (req, res, next) => {
+    try {
+        const count = await Listing.countDocuments({}).maxTimeMS(5000);
+        res.json({
+            connected: mongoose.connection.readyState === 1,
+            database: mongoose.connection.name,
+            collection: Listing.collection.name,
+            listings: count,
+        });
+    } catch (err) {
+        next(err);
+    }
 });
 
 // --- 4. ERROR HANDLING ---

@@ -6,6 +6,8 @@ import "./Listings.css";
 import StayMap from "../components/map";
 import { formatPrice, getListingImage, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3030";
+
 const countryToPlace = {
   "Uttar Pradesh": "Varanasi",
   Telangana: "Hyderabad",
@@ -190,7 +192,8 @@ export default function Listings() {
   }, [location.search]);
 
   useEffect(() => {
-    axios.get("http://localhost:3030/wishlist", { withCredentials: true })
+    // 🚨 CRITICAL FIX 2 APPLIED HERE (Wishlist fetch)
+    axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true })
       .then((res) => {
         const ids = Array.isArray(res.data) ? res.data.map((listing) => listing._id) : [];
         setSavedListingIds(ids);
@@ -201,14 +204,15 @@ export default function Listings() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    axios.get(`http://localhost:3030/listings${location.search}`)
+    // 🚨 CRITICAL FIX 2 APPLIED HERE (Listings fetch)
+    axios.get(`${API_BASE_URL}/listings${location.search}`)
       .then((res) => {
         setListings(Array.isArray(res.data) ? res.data : []);
         setError("");
       })
       .catch((err) => {
         console.log(err);
-        setError("Unable to load listings right now.");
+        setError(err.response?.data?.error || "Unable to load listings right now.");
       })
       .finally(() => setLoading(false));
   }, [location.search]);
@@ -353,7 +357,8 @@ export default function Listings() {
 
   const toggleSavedListing = async (id) => {
     try {
-      const res = await axios.post(`http://localhost:3030/wishlist/${id}`, {}, { withCredentials: true });
+      // 🚨 CRITICAL FIX 2 APPLIED HERE (Wishlist POST)
+      const res = await axios.post(`${API_BASE_URL}/wishlist/${id}`, {}, { withCredentials: true });
       setSavedListingIds((currentIds) =>
         res.data.saved
           ? [...new Set([...currentIds, id])]
