@@ -10,7 +10,7 @@ export default function Wishlist() {
   const [loading, setLoading] = useState(true);
 
   const loadWishlist = () => {
-    axios.get("http://localhost:3030/wishlist", { withCredentials: true })
+    axios.get("https://staynest-cr08.onrender.com/wishlist", { withCredentials: true })
       .then((res) => setListings(Array.isArray(res.data) ? res.data : []))
       .catch(() => toast.error("Unable to load wishlist."))
       .finally(() => setLoading(false));
@@ -22,7 +22,7 @@ export default function Wishlist() {
 
   const removeSaved = async (listingId) => {
     try {
-      await axios.post(`http://localhost:3030/wishlist/${listingId}`, {}, { withCredentials: true });
+      await axios.post(`https://staynest-cr08.onrender.com/wishlist/${listingId}`, {}, { withCredentials: true });
       toast.success("Removed from wishlist.");
       loadWishlist();
     } catch {

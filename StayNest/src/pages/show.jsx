@@ -91,7 +91,7 @@ function Show() {
 
   // FETCH LISTING
   useEffect(() => {
-    axios.get(`http://localhost:3030/listings/${id}`)
+    axios.get(`https://staynest-cr08.onrender.com/listings/${id}`)
       .then((res) => {
         setListing(res.data);
         setSubmittedReviews(
@@ -125,7 +125,7 @@ function Show() {
 
   // FETCH CURRENT USER
   useEffect(() => {
-    axios.get("http://localhost:3030/me", { withCredentials: true })
+    axios.get("https://staynest-cr08.onrender.com/me", { withCredentials: true })
       .then((res) => {
         setCurrentUser({
           username: res.data.user,
@@ -170,7 +170,7 @@ function Show() {
             setCoordinates(nextCoordinates);
 
             const savedListing = await axios.patch(
-              `http://localhost:3030/listings/${listing._id}/coordinates`,
+              `https://staynest-cr08.onrender.com/listings/${listing._id}/coordinates`,
               { lat: nextCoordinates[0], lng: nextCoordinates[1] }
             );
             setListing(savedListing.data);
@@ -195,7 +195,7 @@ function Show() {
     }
     try {
       setIsDeleting(true);
-      await axios.delete(`http://localhost:3030/listings/${id}`, {
+      await axios.delete(`https://staynest-cr08.onrender.com/listings/${id}`, {
         withCredentials: true,
       });
       toast.success("Listing deleted successfully.");
@@ -263,7 +263,7 @@ function Show() {
       });
 
       const { data: savedReview } = await axios.post(
-        `http://localhost:3030/listings/${id}/reviews`,
+        `https://staynest-cr08.onrender.com/listings/${id}/reviews`,
         reviewPayload,
         { withCredentials: true }
       );
@@ -310,7 +310,7 @@ function Show() {
 
     try {
       if (review.isStored) {
-        await axios.delete(`http://localhost:3030/listings/${id}/reviews/${review.id}`, {
+        await axios.delete(`https://staynest-cr08.onrender.com/listings/${id}/reviews/${review.id}`, {
           withCredentials: true,
         });
         setSubmittedReviews((currentReviews) =>
@@ -371,7 +371,7 @@ function Show() {
     }
 
     try {
-      await axios.post("http://localhost:3030/bookings", {
+      await axios.post("https://staynest-cr08.onrender.com/bookings", {
         listingId: id,
         checkIn: bookingForm.checkIn,
         checkOut: bookingForm.checkOut,

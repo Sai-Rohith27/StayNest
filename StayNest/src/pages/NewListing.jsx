@@ -130,7 +130,7 @@ function NewListing() {
         listingPayload.append("imageFilename", formData.image.filename || "listingimage");
       }
 
-      await axios.post("http://localhost:3030/listings", listingPayload, {
+      await axios.post("https://staynest-cr08.onrender.com/listings", listingPayload, {
         withCredentials: true,
       });
       

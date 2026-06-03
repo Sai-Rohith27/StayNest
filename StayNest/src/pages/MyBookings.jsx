@@ -18,7 +18,7 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
 
   const loadBookings = () => {
-    axios.get("http://localhost:3030/bookings", { withCredentials: true })
+    axios.get("https://staynest-cr08.onrender.com/bookings", { withCredentials: true })
       .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
       .catch(() => toast.error("Unable to load bookings."))
       .finally(() => setLoading(false));
@@ -30,7 +30,7 @@ export default function MyBookings() {
 
   const cancelBooking = async (bookingId) => {
     try {
-      await axios.patch(`http://localhost:3030/bookings/${bookingId}/cancel`, {}, { withCredentials: true });
+      await axios.patch(`https://staynest-cr08.onrender.com/bookings/${bookingId}/cancel`, {}, { withCredentials: true });
       toast.success("Booking cancelled.");
       loadBookings();
     } catch {

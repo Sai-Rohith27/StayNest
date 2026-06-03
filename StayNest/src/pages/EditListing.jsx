@@ -28,7 +28,7 @@ function EditListing() {
   const [listingImageFile, setListingImageFile] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:3030/listings/${id}`)
+    axios.get(`https://staynest-cr08.onrender.com/listings/${id}`)
       .then((res) => {
         setFormData(res.data);
         setPageError("");
@@ -146,7 +146,7 @@ function EditListing() {
         listingPayload.append("imageFilename", formData.image?.filename || "listingimage");
       }
 
-      await axios.put(`http://localhost:3030/listings/${id}`, listingPayload, {
+      await axios.put(`https://staynest-cr08.onrender.com/listings/${id}`, listingPayload, {
         withCredentials: true,
       });
       toast.success("Listing updated successfully.");

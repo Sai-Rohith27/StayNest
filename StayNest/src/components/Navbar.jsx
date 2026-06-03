@@ -9,7 +9,7 @@ function Navbar() {
   const [user, setUser] = useState(null);
 
   const loadUser = () => {
-    axios.get("http://localhost:3030/me", { withCredentials: true })
+    axios.get("https://staynest-cr08.onrender.com/me", { withCredentials: true })
       .then((res) => {
         setUser(res.data.user || null);
       })
@@ -39,7 +39,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:3030/logout", {}, { withCredentials: true });
+      await axios.post("https://staynest-cr08.onrender.com/logout", {}, { withCredentials: true });
       setUser(null);
       window.dispatchEvent(new Event("staynest-auth-change"));
       toast.success("Logged out successfully.");

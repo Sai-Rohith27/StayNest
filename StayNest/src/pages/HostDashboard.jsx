@@ -12,8 +12,8 @@ export default function HostDashboard() {
 
   useEffect(() => {
     Promise.all([
-      axios.get("http://localhost:3030/host/listings", { withCredentials: true }),
-      axios.get("http://localhost:3030/bookings/host", { withCredentials: true }),
+      axios.get("'https://staynest-cr08.onrender.com/host/listings'", { withCredentials: true }),
+      axios.get("https://staynest-cr08.onrender.com/bookings/host", { withCredentials: true }),
     ])
       .then(([listingRes, bookingRes]) => {
         setListings(Array.isArray(listingRes.data) ? listingRes.data : []);

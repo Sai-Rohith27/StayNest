@@ -42,7 +42,7 @@ function Login() {
     }
 
     try {
-      await axios.post("http://localhost:3030/login", formData, {
+      await axios.post("https://stay-nest-phi.vercel.app", formData, {
         withCredentials: true,
       });
 

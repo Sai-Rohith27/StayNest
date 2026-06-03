@@ -9,7 +9,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:3030/profile", { withCredentials: true })
+    axios.get("https://staynest-cr08.onrender.com/profile", { withCredentials: true })
       .then((res) => setProfile(res.data))
       .catch(() => toast.error("Unable to load profile."))
       .finally(() => setLoading(false));

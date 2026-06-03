@@ -6,7 +6,7 @@ import "./Listings.css";
 import StayMap from "../components/map";
 import { formatPrice, getListingImage, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3030";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://staynest-cr08.onrender.com";
 
 const countryToPlace = {
   "Uttar Pradesh": "Varanasi",

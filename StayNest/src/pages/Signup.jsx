@@ -96,7 +96,7 @@ function Signup() {
 
     try {
       // Send data to your Express backend
-      await axios.post("http://localhost:3030/signup", formData, {
+      await axios.post("https://staynest-cr08.onrender.com/signup", formData, {
         withCredentials: true,
       });
       
