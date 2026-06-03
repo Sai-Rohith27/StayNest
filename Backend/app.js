@@ -68,7 +68,9 @@ const sessionOptions = {
         httpOnly: true, // Secures cookie from malicious JavaScript
         // 🚨 CRITICAL FIX 1: Enable secure cross-origin cookies on production
         secure: process.env.NODE_ENV === "production", 
-        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax'
+        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+        secure:true,
+        sameSite:"none"
     }
 };
 app.use(session(sessionOptions));
