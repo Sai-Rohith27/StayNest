@@ -42,7 +42,7 @@ function Login() {
     }
 
     try {
-      await axios.post("https://staynest-cr08.onrender.com", formData, {
+      await axios.post("https://staynest-cr08.onrender.com/login", formData, {
         withCredentials: true,
       });
 

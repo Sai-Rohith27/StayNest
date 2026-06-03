@@ -12,7 +12,7 @@ export default function HostDashboard() {
 
   useEffect(() => {
     Promise.all([
-      axios.get("'https://staynest-cr08.onrender.com/host/listings'", { withCredentials: true }),
+      axios.get("'https://staynest-cr08.onrender.com/host/listings", { withCredentials: true }),
       axios.get("https://staynest-cr08.onrender.com/bookings/host", { withCredentials: true }),
     ])
       .then(([listingRes, bookingRes]) => {
