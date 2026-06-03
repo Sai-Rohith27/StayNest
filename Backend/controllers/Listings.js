@@ -1,4 +1,4 @@
-const Listing = require("../models/Listing");
+const Listing = require("../models/listing");
 const ExpressError = require("../utils/ExpressError"); // Added missing import
 const { listingSchema } = require("../schema.js");    // Added missing import
 
