@@ -1,6 +1,6 @@
 const User=require("../models/User");
 const passport = require("passport");
-const Listing = require("../models/Listing");
+const Listing = require("../models/listing");
 const Booking = require("../models/Booking");
 
 function requireLogin(req, res, next) {

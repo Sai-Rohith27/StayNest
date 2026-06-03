@@ -1,5 +1,5 @@
 const Review = require("../models/review"); // Fixed variable name to Review
-const Listing = require("../models/Listing"); // Added missing Listing model import
+const Listing = require("../models/listing"); // Added missing Listing model import
 const Booking = require("../models/Booking");
 const ExpressError = require("../utils/ExpressError"); // Added missing import
 const { reviewSchema } = require("../schema.js"); // Added missing import

@@ -1,5 +1,5 @@
 const Booking = require("../models/Booking");
-const Listing = require("../models/Listing");
+const Listing = require("../models/listing");
 const ExpressError = require("../utils/ExpressError");
 
 function isLoggedIn(req, res, next) {
