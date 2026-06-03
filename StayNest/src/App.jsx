@@ -25,7 +25,7 @@ function RequireAuth({ children }) {
   useEffect(() => {
     let isActive = true;
 
-    axios.get("http://localhost:3030/me", { withCredentials: true })
+    axios.get(`${import.meta.env.VITE_API_URL}/me`, { withCredentials: true })
       .then(() => {
         if (isActive) setAuthState("allowed");
       })

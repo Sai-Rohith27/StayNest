@@ -16,6 +16,10 @@
   --brand-600: #b8572e;
   --brand-500: #d67343;
   --brand-300: #f0b47e;
+  --aura-pink: #ff4f8b;
+  --aura-gold: #ffb84d;
+  --aura-green: #28c76f;
+  --aura-blue: #38a3ff;
   --sage-600: #5d7b67;
   --shadow-soft: 0 18px 45px rgba(72, 48, 34, 0.12);
   --shadow-lift: 0 28px 70px rgba(70, 45, 31, 0.18);
@@ -66,6 +70,48 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    background-color 0.22s ease,
+    color 0.22s ease,
+    filter 0.22s ease;
+}
+
+button:not(:disabled):active,
+a[href]:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+button:not(:disabled):hover,
+a[href]:hover {
+  filter: saturate(1.08);
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: rgba(56, 163, 255, 0.28);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(56, 163, 255, 0.42);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 7px rgba(255, 79, 139, 0.12),
+    0 14px 34px rgba(56, 163, 255, 0.16);
 }
 
 a {
@@ -182,5 +228,42 @@ p {
     opacity: 1;
     transform: translateY(0) scale(1);
     filter: blur(0);
+  }
+}
+
+@keyframes staynestGlowDrift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes staynestSoftPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
   }
 }

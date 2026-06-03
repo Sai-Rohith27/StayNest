@@ -50,6 +50,7 @@
 }
 
 .home-search-card {
+  position: relative;
   width: min(100%, 1184px);
   min-height: 98px;
   margin: 0 auto;
@@ -63,6 +64,15 @@
   border: 1px solid rgba(122, 78, 53, 0.12);
   box-shadow: 0 22px 56px rgba(72, 48, 34, 0.16);
   backdrop-filter: blur(16px);
+  transition: box-shadow 0.28s ease, border-color 0.28s ease, transform 0.28s ease;
+}
+
+.home-search-card:hover {
+  border-color: rgba(255, 79, 139, 0.26);
+  box-shadow:
+    0 28px 70px rgba(72, 48, 34, 0.2),
+    0 0 0 5px rgba(255, 184, 77, 0.12);
+  transform: translateY(-2px);
 }
 
 .home-search-field {
@@ -80,7 +90,9 @@
 }
 
 .home-search-field:hover {
-  background: rgba(247, 236, 222, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 79, 139, 0.08), rgba(255, 184, 77, 0.12)),
+    rgba(247, 236, 222, 0.72);
 }
 
 .home-search-field span {
@@ -130,6 +142,16 @@
   background: linear-gradient(135deg, var(--brand-600), var(--brand-500));
   box-shadow: 0 10px 24px rgba(184, 87, 46, 0.24);
   cursor: pointer;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+}
+
+.home-search-card .home-search-submit:hover,
+.results-search-pill button:hover {
+  filter: saturate(1.25) brightness(1.05);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    0 18px 38px rgba(184, 87, 46, 0.34),
+    0 0 0 7px rgba(255, 79, 139, 0.14);
 }
 
 .home-search-error {
@@ -210,6 +232,12 @@
   font-size: clamp(1.28rem, 2vw, 1.65rem);
   font-weight: 900;
   letter-spacing: 0;
+  transition: color 0.22s ease, transform 0.22s ease;
+}
+
+.place-title-button:hover {
+  color: var(--brand-600);
+  transform: translateX(4px);
 }
 
 .place-title-button span {
@@ -226,7 +254,8 @@
 }
 
 .place-title-button:hover span {
-  background: #e8e8e8;
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.28), rgba(56, 163, 255, 0.18));
+  box-shadow: 0 10px 24px rgba(184, 87, 46, 0.18);
 }
 
 .place-row-controls {
@@ -243,10 +272,15 @@
   background: #fff8ef;
   color: var(--ink-900);
   cursor: pointer;
+  box-shadow: 0 8px 18px rgba(72, 48, 34, 0.08);
 }
 
 .place-scroll-button:hover {
-  background: #f7ecde;
+  background: linear-gradient(135deg, #fff1e0, #e9fff2);
+  transform: translateY(-2px) scale(1.06);
+  box-shadow:
+    0 14px 28px rgba(72, 48, 34, 0.14),
+    0 0 0 5px rgba(40, 199, 111, 0.11);
 }
 
 .place-scroll-button.prev::before {
@@ -274,10 +308,46 @@
 }
 
 .stay-tile {
+  position: relative;
   min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 22px;
   background: #ffffff;
   cursor: pointer;
   scroll-snap-align: start;
+  z-index: 0;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease,
+    background-color 0.28s ease;
+}
+
+.stay-tile::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 24px;
+  background: linear-gradient(120deg, var(--aura-pink), var(--aura-gold), var(--aura-green), var(--aura-blue), var(--aura-pink));
+  background-size: 280% 280%;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.stay-tile:hover,
+.stay-tile:focus-within {
+  border-color: rgba(255, 79, 139, 0.22);
+  box-shadow:
+    0 26px 52px rgba(72, 48, 34, 0.17),
+    0 0 0 5px rgba(255, 184, 77, 0.1);
+  transform: translateY(-7px);
+}
+
+.stay-tile:hover::before,
+.stay-tile:focus-within::before {
+  opacity: 0.62;
+  animation: staynestGlowDrift 3s linear infinite;
 }
 
 .stay-tile-row {
@@ -290,6 +360,7 @@
   border-radius: 18px;
   overflow: hidden;
   background: #ebebeb;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
 }
 
 .stay-tile-media img {
@@ -297,11 +368,12 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  transition: transform 0.25s ease;
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.38s ease;
 }
 
 .stay-tile:hover .stay-tile-media img {
-  transform: scale(1.035);
+  filter: saturate(1.12) contrast(1.03);
+  transform: scale(1.065) rotate(0.55deg);
 }
 
 .stay-tile-badge {
@@ -334,6 +406,8 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.18);
   cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: transform 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .stay-tile-heart::before {
@@ -346,6 +420,12 @@
 
 .stay-tile-heart:hover::before {
   content: "\2665";
+}
+
+.stay-tile-heart:hover {
+  background: rgba(255, 56, 92, 0.94);
+  box-shadow: 0 12px 24px rgba(255, 56, 92, 0.28);
+  transform: scale(1.12) rotate(-6deg);
 }
 
 .stay-tile-heart.is-saved::before {
@@ -435,6 +515,7 @@
   gap: 18px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(18px);
+  box-shadow: 0 12px 28px rgba(72, 48, 34, 0.08);
 }
 
 .results-logo-button {
@@ -446,6 +527,12 @@
   text-align: left;
   font-size: 1.45rem;
   font-weight: 900;
+  transition: transform 0.22s ease, color 0.22s ease;
+}
+
+.results-logo-button:hover {
+  color: var(--aura-pink);
+  transform: translateY(-1px);
 }
 
 .results-search-pill {
@@ -458,6 +545,15 @@
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.results-search-pill:hover {
+  border-color: rgba(56, 163, 255, 0.3);
+  box-shadow:
+    0 14px 34px rgba(72, 48, 34, 0.16),
+    0 0 0 5px rgba(56, 163, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .results-search-pill span {
@@ -514,6 +610,15 @@
   color: var(--ink-700);
   font-size: 0.86rem;
   font-weight: 900;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+}
+
+.results-filter-strip label:hover,
+.results-suggestion-box button:hover {
+  border-color: rgba(255, 79, 139, 0.3);
+  background: linear-gradient(135deg, rgba(255, 79, 139, 0.08), rgba(40, 199, 111, 0.1)), #ffffff;
+  box-shadow: 0 10px 22px rgba(72, 48, 34, 0.11);
+  transform: translateY(-2px);
 }
 
 .results-filter-strip input,
@@ -576,6 +681,7 @@
   color: var(--ink-900);
   cursor: pointer;
   font-weight: 900;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
 }
 
 .stay-tile-map .stay-tile-media {
