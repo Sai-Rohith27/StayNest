@@ -17,7 +17,8 @@ import Wishlist from "./pages/Wishlist";
 import HostDashboard from "./pages/HostDashboard";
 import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function RequireAuth({ children }) {
   const location = useLocation();
   const [authState, setAuthState] = useState("checking");
@@ -96,6 +97,8 @@ function App(){
             <Route path="/listings/new" element={<RequireAuth><NewListing /></RequireAuth>} />
             <Route path="/listings/:id" element={<Show />} />
             <Route path="/listings/:id/edit" element={<RequireAuth><EditListing /></RequireAuth>} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route
               path="*"
               element={(

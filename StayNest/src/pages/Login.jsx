@@ -16,7 +16,6 @@ function Login() {
     password: false,
   });
   const [submitError, setSubmitError] = useState("");
-
   const errors = {
     username: formData.username.trim() ? "" : "Username is required",
     password: formData.password ? "" : "Password is required",
@@ -113,7 +112,11 @@ function Login() {
               <p className="feedback-error">{errors.password}</p>
             )}
           </div>
-
+<div style={{ textAlign: "right", marginBottom: "15px" }}>
+            <Link to="/forgot-password" style={{ fontSize: "14px", color: "var(--ink-400)", textDecoration: "none" }}>
+              Forgot your password?
+            </Link>
+          </div>
           <button type="submit" className="signup-submit-button">
             Login
           </button>
