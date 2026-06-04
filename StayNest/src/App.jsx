@@ -19,8 +19,8 @@ import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
 
 // --- NEW IMPORTS FOR FORGOT PASSWORD ---
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/Forgotpassword";
+import ResetPassword from "./pages/Resetpassword";
 // ---------------------------------------
 
 function RequireAuth({ children }) {
