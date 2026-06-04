@@ -2,12 +2,12 @@ import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_URL } from "../utils/api";
 import "./Signup.css"; // Recycling your awesome CSS!
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -18,7 +18,7 @@ function ForgotPassword() {
 
     setIsSubmitting(true);
     try {
-      await axios.post(`${apiUrl}/forgot-password`, { email });
+      await axios.post(`${API_URL}/forgot-password`, { email });
       toast.success("Reset link sent! Please check your inbox.");
       setEmail(""); // Clear the input
     } catch (err) {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_URL } from "../utils/api";
 import "./Signup.css";
 
 function ResetPassword() {
@@ -11,7 +12,6 @@ function ResetPassword() {
   const navigate = useNavigate();
   // This extracts the secret token directly from the URL!
   const { token } = useParams(); 
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -23,7 +23,7 @@ function ResetPassword() {
     setIsSubmitting(true);
     try {
       // Send the new password AND the token to verify they own the email
-      await axios.post(`${apiUrl}/reset-password/${token}`, { password });
+      await axios.post(`${API_URL}/reset-password/${token}`, { password });
       toast.success("Password successfully changed! You can now log in.");
       navigate("/login");
     } catch (err) {

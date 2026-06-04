@@ -2,16 +2,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_URL, clearAuthToken } from "../utils/api";
 import "./Navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  const apiUrl = import.meta.env.VITE_API_URL || "https://staynest-cr08.onrender.com";
-
   const loadUser = () => {
-    axios.get(`${apiUrl}/me`, { withCredentials: true })
+    axios.get(`${API_URL}/me`, { withCredentials: true })
       .then((res) => {
         setUser(res.data.user || null);
       })
@@ -36,7 +35,7 @@ function Navbar() {
     return () => {
       window.removeEventListener("staynest-auth-change", handleAuthChange);
     };
-  }, [apiUrl]);
+  }, []);
 
   const handleAddListing = (event) => {
     if (user) {
@@ -50,7 +49,8 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${apiUrl}/logout`, {}, { withCredentials: true });
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+      clearAuthToken();
       setUser(null);
       window.dispatchEvent(new CustomEvent("staynest-auth-change", {
         detail: { user: null },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_URL, saveAuthToken } from "../utils/api";
 import "./Signup.css";
 
 function Login() {
@@ -41,10 +42,11 @@ function Login() {
     }
 
     try {
-      const res = await axios.post("https://staynest-cr08.onrender.com/login", formData, {
+      const res = await axios.post(`${API_URL}/login`, formData, {
         withCredentials: true,
       });
 
+      saveAuthToken(res.data.token);
       toast.success("Logged in successfully.");
       window.dispatchEvent(new CustomEvent("staynest-auth-change", {
         detail: { user: res.data.user || formData.username },

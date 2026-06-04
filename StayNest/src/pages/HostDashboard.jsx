@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./Dashboard.css";
+import { API_URL } from "../utils/api";
 import { formatPrice, getListingImage, getListingLocation, PLACEHOLDER_IMAGE } from "../utils/listingUi";
 
 export default function HostDashboard() {
@@ -12,8 +13,8 @@ export default function HostDashboard() {
 
   useEffect(() => {
     Promise.all([
-      axios.get("'https://staynest-cr08.onrender.com/host/listings", { withCredentials: true }),
-      axios.get("https://staynest-cr08.onrender.com/bookings/host", { withCredentials: true }),
+      axios.get(`${API_URL}/host/listings`, { withCredentials: true }),
+      axios.get(`${API_URL}/bookings/host`, { withCredentials: true }),
     ])
       .then(([listingRes, bookingRes]) => {
         setListings(Array.isArray(listingRes.data) ? listingRes.data : []);

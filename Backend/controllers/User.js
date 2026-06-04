@@ -2,6 +2,7 @@ const User=require("../models/User");
 const passport = require("passport");
 const Listing = require("../models/listing");
 const Booking = require("../models/Booking");
+const { createAuthToken } = require("../utils/tokenAuth");
 
 function requireLogin(req, res, next) {
     if (!req.isAuthenticated || !req.isAuthenticated()) {
@@ -53,7 +54,8 @@ module.exports.userlogin=(req, res, next) => {
             res.json({
                 message:"Logged in successfully",
                 user:req.user.username,
-                userId:req.user._id
+                userId:req.user._id,
+                token: createAuthToken(req.user)
             });
         });
     })(req, res, next);

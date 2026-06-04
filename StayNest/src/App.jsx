@@ -19,8 +19,7 @@ import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
 import ForgotPassword from "./pages/Forgotpassword";
 import ResetPassword from "./pages/Resetpassword";
-
-const API_URL = import.meta.env.VITE_API_URL || "https://staynest-cr08.onrender.com";
+import { API_URL } from "./utils/api";
 
 function RequireAuth({ children }) {
   const location = useLocation();
