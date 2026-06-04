@@ -17,8 +17,8 @@ import Wishlist from "./pages/Wishlist";
 import HostDashboard from "./pages/HostDashboard";
 import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/Forgotpassword";
+import ResetPassword from "./pages/Resetpassword";
 function RequireAuth({ children }) {
   const location = useLocation();
   const [authState, setAuthState] = useState("checking");
