@@ -7,6 +7,12 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    wishlist: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Listing",
+        }
+    ],
     // --- NEW FIELDS FOR PASSWORD RESET ---
     resetPasswordToken: String,
     resetPasswordExpires: Date

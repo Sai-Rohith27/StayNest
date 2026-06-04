@@ -17,9 +17,11 @@ import Wishlist from "./pages/Wishlist";
 import HostDashboard from "./pages/HostDashboard";
 import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
-import ForgotPassword from "./pages/Forgotpassword";
-import ResetPassword from "./pages/Resetpassword";
-import { API_URL } from "./utils/api";
+
+// --- NEW IMPORTS FOR FORGOT PASSWORD ---
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+// ---------------------------------------
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -28,7 +30,7 @@ function RequireAuth({ children }) {
   useEffect(() => {
     let isActive = true;
 
-    axios.get(`${API_URL}/me`, { withCredentials: true })
+    axios.get(`${import.meta.env.VITE_API_URL}/me`, { withCredentials: true })
       .then(() => {
         if (isActive) setAuthState("allowed");
       })
@@ -89,6 +91,12 @@ function App(){
           <Routes>
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            
+            {/* --- NEW FORGOT PASSWORD ROUTES --- */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            {/* ---------------------------------- */}
+            
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
             <Route path="/bookings/:bookingId" element={<RequireAuth><BookingDetail /></RequireAuth>} />
@@ -99,8 +107,6 @@ function App(){
             <Route path="/listings/new" element={<RequireAuth><NewListing /></RequireAuth>} />
             <Route path="/listings/:id" element={<Show />} />
             <Route path="/listings/:id/edit" element={<RequireAuth><EditListing /></RequireAuth>} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route
               path="*"
               element={(

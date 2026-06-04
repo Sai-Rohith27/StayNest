@@ -2,7 +2,29 @@ const User=require("../models/User");
 const passport = require("passport");
 const Listing = require("../models/listing");
 const Booking = require("../models/Booking");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const { createAuthToken } = require("../utils/tokenAuth");
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+
+function getFrontendUrl() {
+    return (process.env.FRONTEND_URL || process.env.CLIENT_URL || "https://stay-nest-phi.vercel.app").replace(/\/+$/, "");
+}
+
+function createTransporter() {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+}
 
 function requireLogin(req, res, next) {
     if (!req.isAuthenticated || !req.isAuthenticated()) {
@@ -61,6 +83,68 @@ module.exports.userlogin=(req, res, next) => {
     })(req, res, next);
 };
 
+module.exports.forgotPassword = async (req, res) => {
+    const email = String(req.body.email || "").trim().toLowerCase();
+
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return res.json({ message: "If an account exists, a reset link has been sent." });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    user.resetPasswordExpires = Date.now() + RESET_TOKEN_TTL_MS;
+    await user.save();
+
+    const resetUrl = `${getFrontendUrl()}/reset-password/${resetToken}`;
+    const transporter = createTransporter();
+
+    if (!transporter) {
+        console.log(`Password reset link for ${user.email}: ${resetUrl}`);
+        return res.json({ message: "Reset link generated. Check backend logs for the link." });
+    }
+
+    await transporter.sendMail({
+        from: `"StayNest" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Reset your StayNest password",
+        text: `Use this link to reset your password: ${resetUrl}\n\nThis link expires in 1 hour.`,
+        html: `<p>Use this link to reset your password:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>This link expires in 1 hour.</p>`,
+    });
+
+    res.json({ message: "If an account exists, a reset link has been sent." });
+};
+
+module.exports.resetPassword = async (req, res) => {
+    const password = String(req.body.password || "");
+
+    if (password.length < 8) {
+        return res.status(400).json({ error: "Password must be at least 8 characters long" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(req.params.token || "").digest("hex");
+    const user = await User.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    await user.setPassword(password);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+};
+
 module.exports.userlogout=(req, res, next) => {
     req.logout((err) => {
         if (err) {
@@ -108,6 +192,9 @@ module.exports.getWishlist = async (req, res) => {
 module.exports.toggleWishlist = async (req, res) => {
     const { listingId } = req.params;
     const user = await User.findById(req.user._id);
+    if (!user.wishlist) {
+        user.wishlist = [];
+    }
     const exists = user.wishlist.some((id) => id.equals(listingId));
 
     if (exists) {
