@@ -19,6 +19,9 @@ import Profile from "./pages/Profile";
 import BookingDetail from "./pages/BookingDetail";
 import ForgotPassword from "./pages/Forgotpassword";
 import ResetPassword from "./pages/Resetpassword";
+
+const API_URL = import.meta.env.VITE_API_URL || "https://staynest-cr08.onrender.com";
+
 function RequireAuth({ children }) {
   const location = useLocation();
   const [authState, setAuthState] = useState("checking");
@@ -26,7 +29,7 @@ function RequireAuth({ children }) {
   useEffect(() => {
     let isActive = true;
 
-    axios.get(`${import.meta.env.VITE_API_URL}/me`, { withCredentials: true })
+    axios.get(`${API_URL}/me`, { withCredentials: true })
       .then(() => {
         if (isActive) setAuthState("allowed");
       })

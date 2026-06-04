@@ -8,8 +8,10 @@ function Navbar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
+  const apiUrl = import.meta.env.VITE_API_URL || "https://staynest-cr08.onrender.com";
+
   const loadUser = () => {
-    axios.get("https://staynest-cr08.onrender.com/me", { withCredentials: true })
+    axios.get(`${apiUrl}/me`, { withCredentials: true })
       .then((res) => {
         setUser(res.data.user || null);
       })
@@ -19,13 +21,22 @@ function Navbar() {
   };
 
   useEffect(() => {
+    const handleAuthChange = (event) => {
+      if (event.detail && Object.prototype.hasOwnProperty.call(event.detail, "user")) {
+        setUser(event.detail.user || null);
+        return;
+      }
+
+      loadUser();
+    };
+
     loadUser();
-    window.addEventListener("staynest-auth-change", loadUser);
+    window.addEventListener("staynest-auth-change", handleAuthChange);
 
     return () => {
-      window.removeEventListener("staynest-auth-change", loadUser);
+      window.removeEventListener("staynest-auth-change", handleAuthChange);
     };
-  }, []);
+  }, [apiUrl]);
 
   const handleAddListing = (event) => {
     if (user) {
@@ -39,9 +50,11 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("https://staynest-cr08.onrender.com/logout", {}, { withCredentials: true });
+      await axios.post(`${apiUrl}/logout`, {}, { withCredentials: true });
       setUser(null);
-      window.dispatchEvent(new Event("staynest-auth-change"));
+      window.dispatchEvent(new CustomEvent("staynest-auth-change", {
+        detail: { user: null },
+      }));
       toast.success("Logged out successfully.");
       navigate("/listings");
     } catch (err) {

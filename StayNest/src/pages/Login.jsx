@@ -41,12 +41,14 @@ function Login() {
     }
 
     try {
-      await axios.post("https://staynest-cr08.onrender.com/login", formData, {
+      const res = await axios.post("https://staynest-cr08.onrender.com/login", formData, {
         withCredentials: true,
       });
 
       toast.success("Logged in successfully.");
-      window.dispatchEvent(new Event("staynest-auth-change"));
+      window.dispatchEvent(new CustomEvent("staynest-auth-change", {
+        detail: { user: res.data.user || formData.username },
+      }));
       navigate(location.state?.from || "/listings", { replace: true });
     } catch (err) {
       console.log(err);
