@@ -60,7 +60,7 @@
 .signup-input {
   width: 100%;
   min-height: 52px;
-  padding: 0 50px 0 16px;
+  padding: 0 50px 0 48px;
   border: 1px solid rgba(122, 78, 53, 0.14);
   border-radius: 18px;
   color: var(--ink-900);
@@ -94,12 +94,59 @@
   box-shadow: 0 0 0 4px rgba(141, 51, 33, 0.1);
 }
 
+.field-icon {
+  position: absolute;
+  left: 17px;
+  width: 19px;
+  height: 19px;
+  color: rgba(95, 75, 66, 0.62);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-wrapper:focus-within .field-icon {
+  color: var(--brand-600);
+}
+
+.has-password-toggle .signup-input {
+  padding-right: 88px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(95, 75, 66, 0.7);
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: rgba(184, 87, 46, 0.09);
+  color: var(--brand-700);
+}
+
+.password-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
 /* Status Icons */
 .status-icon {
   position: absolute;
   right: 16px;
   width: 20px;
   height: 20px;
+  pointer-events: none;
+}
+.status-icon.with-toggle {
+  right: 54px;
 }
 .valid-icon {
   color: var(--sage-600);
@@ -116,7 +163,7 @@
   margin-top: 8px;
 }
 .feedback-error {
-  color: #12b76a;
+  color: #8d3321;
   font-size: 0.84rem;
   font-weight: 700;
   margin-top: 8px;
